@@ -4,7 +4,7 @@ Pipeline com **dbt** e **DuckDB** que lê as planilhas de quatro edições do **
 
 **📊 Página:** https://luissfellipe.github.io/estelionato-digital/ · **dbt docs:** https://luissfellipe.github.io/estelionato-digital/dbt/
 
-A página tem sete abas: **Estados** (mapa e ranking ligados, ficha com o contorno do estado, mapa de calor estado × ano), **Comparativos** (total × eletrônico, dispersão, crescimento com base fixa, funil), **Falso advogado** (por estado, no tempo e em tamanho), **Matérias** (38 links conferidos), **Consultar e citar**, **Trechos para o TCC** e **Cuidados**.
+A página tem seis abas: **Estados** (mapa e ranking ligados, ficha com o contorno do estado, mapa de calor estado × ano), **Comparativos** (total × eletrônico, dispersão, crescimento com base fixa, funil), **Falso advogado** (por estado, no tempo e em tamanho), **Matérias** (38 links conferidos), **Consultar e citar** e **Cuidados**.
 
 ![Aba Estados: mapa, ranking e mapa de calor](docs/painel.png)
 

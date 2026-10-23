@@ -1,7 +1,7 @@
 """Monta o Caderno do Estelionato: uma página HTML única, sem framework, com
 os números dos marts, as fontes de citação e os trechos curados embutidos.
 
-Os trechos de fontes.json foram conferidos literalmente contra o texto dos
+Os trechos (consulta/trechos_tcc.json, fora do git) foram conferidos literalmente contra o texto dos
 PDFs, página a página.
 """
 
@@ -24,6 +24,7 @@ def linhas(con, sql: str) -> list[dict]:
 def main() -> None:
     con = duckdb.connect(str(BANCO), read_only=True)
     fontes = json.loads((AQUI / "fontes.json").read_text())
+    fontes |= json.loads((AQUI / "trechos_tcc.json").read_text())
     dados = {
         **fontes,
         "registros": linhas(con, """

@@ -6,3 +6,8 @@ dbt_estelionato/logs/
 dbt_estelionato/dbt_packages/
 dbt_estelionato/.user.yml
 logs/
+# Material do TCC: só no artifact privado, nunca no repositório público.
+consulta/trechos_tcc.json
+consulta/caderno.html
+painel/dados-completo.js
+painel/artifact.html

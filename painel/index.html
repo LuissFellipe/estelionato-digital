@@ -24,7 +24,6 @@
         <button class="aba" role="tab" id="aba-falso" data-alvo="falso">Falso advogado</button>
         <button class="aba" role="tab" id="aba-materias" data-alvo="materias">Matérias <span class="n" id="n-materias"></span></button>
         <button class="aba" role="tab" id="aba-consultar" data-alvo="consultar">Consultar e citar</button>
-        <button class="aba" role="tab" id="aba-trechos" data-alvo="trechos">Trechos para o TCC <span class="n" id="n-trechos"></span></button>
         <button class="aba" role="tab" id="aba-cuidados" data-alvo="cuidados">Cuidados</button>
       </nav>
     </div>
@@ -163,7 +162,7 @@
     <!-- =========================================================== MATÉRIAS -->
     <section class="painel" id="painel-materias" role="tabpanel" aria-labelledby="aba-materias" hidden>
       <h2>Matérias sobre o golpe do falso advogado</h2>
-      <p class="intro">Reportagens, notícias de tribunais e da OAB e o projeto de lei. Todos os links foram abertos e conferidos em 23/10/2026. A etiqueta <span class="carimbo c-ok">Já nas suas fontes</span> marca o que já está no pré-projeto ou nos artigos da pasta do TCC.</p>
+      <p class="intro" id="intro-materias">Reportagens, notícias de tribunais e da OAB e o projeto de lei. Todos os links foram abertos e conferidos em 23/10/2026.</p>
       <div class="barra-filtros">
         <div class="segmentos" id="chips-materias" role="group" aria-label="Filtrar por assunto"></div>
         <label class="busca"><span class="sr">Buscar nas matérias</span><input id="busca-materias" type="search" placeholder="Buscar nas matérias" enterkeyhint="search" autocomplete="off"></label>
@@ -196,17 +195,6 @@
         </form>
         <article class="ficha" id="ficha"></article>
       </div>
-    </section>
-
-    <!-- ============================================================ TRECHOS -->
-    <section class="painel" id="painel-trechos" role="tabpanel" aria-labelledby="aba-trechos" hidden>
-      <h2>Trechos para o TCC</h2>
-      <p class="intro">Trechos literais dos capítulos sobre estelionato das edições 2024, 2025 e 2026, conferidos página a página contra o PDF, com a citação ABNT e uma sugestão de uso no TCC sobre o golpe do falso advogado.</p>
-      <div class="barra-filtros">
-        <div class="segmentos" id="chips-trechos" role="group" aria-label="Filtrar por tema"></div>
-        <label class="busca"><span class="sr">Buscar nos trechos</span><input id="busca-trechos" type="search" placeholder="Buscar nos trechos" enterkeyhint="search" autocomplete="off"></label>
-      </div>
-      <div class="lista-trechos" id="lista-trechos"></div>
     </section>
 
     <!-- =========================================================== CUIDADOS -->

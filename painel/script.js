@@ -63,7 +63,25 @@ document.addEventListener("click", (ev) => {
 });
 
 // -------------------------------------------------------------------- abas
-const PAINEIS = ["estados", "comparativos", "falso", "materias", "consultar", "trechos", "cuidados"];
+// Os trechos do TCC só existem nos dados do artifact privado (dados-completo.js).
+// No site público a aba nem é criada.
+const PRIVADO = Boolean(D.privado && D.trechos);
+if (PRIVADO) {
+  document.getElementById("aba-cuidados").insertAdjacentHTML("beforebegin",
+    `<button class="aba" role="tab" id="aba-trechos" data-alvo="trechos">Trechos para o TCC <span class="n" id="n-trechos"></span></button>`);
+  document.getElementById("painel-cuidados").insertAdjacentHTML("beforebegin", `
+    <section class="painel" id="painel-trechos" role="tabpanel" aria-labelledby="aba-trechos" hidden>
+      <h2>Trechos para o TCC</h2>
+      <p class="intro">Trechos literais dos capítulos sobre estelionato das edições 2024, 2025 e 2026, conferidos página a página contra o PDF, com a citação ABNT e uma sugestão de uso no TCC sobre o golpe do falso advogado.</p>
+      <div class="barra-filtros">
+        <div class="segmentos" id="chips-trechos" role="group" aria-label="Filtrar por tema"></div>
+        <label class="busca"><span class="sr">Buscar nos trechos</span><input id="busca-trechos" type="search" placeholder="Buscar nos trechos" enterkeyhint="search" autocomplete="off"></label>
+      </div>
+      <div class="lista-trechos" id="lista-trechos"></div>
+    </section>`);
+  document.getElementById("intro-materias").insertAdjacentHTML("beforeend", ` A etiqueta <span class="carimbo c-ok">Já nas suas fontes</span> marca o que já está no pré-projeto ou nos artigos da pasta do TCC.`);
+}
+const PAINEIS = ["estados", "comparativos", "falso", "materias", "consultar", ...(PRIVADO ? ["trechos"] : []), "cuidados"];
 let abaAtual = null;
 function abrir(id, rolar) {
   if (!PAINEIS.includes(id)) id = "estados";
@@ -76,7 +94,7 @@ function abrir(id, rolar) {
   if (rolar) window.scrollTo({ top: 0 });
   desenharAba(id);
 }
-document.querySelectorAll(".aba").forEach((b) => b.addEventListener("click", () => abrir(b.dataset.alvo, true)));
+document.querySelector(".abas").addEventListener("click", (ev) => { const b = ev.target.closest(".aba"); if (b) abrir(b.dataset.alvo, true); });
 
 // ---------------------------------------------------------- base do ECharts
 const graficos = {};
@@ -601,7 +619,7 @@ function desenharFalso() {
     <p>Somando as linhas, algumas não fecham com os totais impressos no próprio artigo:</p>
     <ul>${[...incons, ...inconsR].map((x) => `<li>${esc(x)}</li>`).join("")}
       <li>Somando as regiões por ano dá ${somaAno.join(", ")}; o Gráfico 1 diz ${V.anuais.map((a) => a.acordaos).join(", ")}.</li></ul>
-    <p style="margin-top:8px">Os gráficos desta página usam os números como estão impressos. No texto do TCC, cite os totais (que batem com as frases do artigo: 378 nos três maiores tribunais, 512 de 693 no Nordeste e Sudeste) e, se usar os anos, mencione a diferença.</p>`;
+    <p style="margin-top:8px">Os gráficos desta página usam os números como estão impressos. Ao citar, use os totais (que batem com as frases do artigo: 378 nos três maiores tribunais, 512 de 693 no Nordeste e Sudeste) e, se usar os anos, mencione a diferença.</p>`;
 }
 document.getElementById("seg-disp-falso").addEventListener("click", (ev) => { const b = ev.target.closest(".seg"); if (!b) return; disp.crime = b.dataset.valor; desenharFalso(); });
 
@@ -631,7 +649,7 @@ function materias() {
       <time datetime="${m.data}">${dataBR(m.data)}</time>
       <div>
         <a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.titulo)}</a>
-        <div class="meta"><span>${esc(m.veiculo)}</span>${m.no_tcc ? `<span class="carimbo c-ok">Já nas suas fontes</span>` : `<span class="carimbo c-neutro">Nova</span>`}</div>
+        <div class="meta"><span>${esc(m.veiculo)}</span>${!PRIVADO ? "" : m.no_tcc ? `<span class="carimbo c-ok">Já nas suas fontes</span>` : `<span class="carimbo c-neutro">Nova</span>`}</div>
         <p>${esc(m.resumo)}</p>
         <button type="button" class="botao copiar-ref" data-copiar="${esc(referenciaMateria(m))}">Copiar referência</button>
       </div>
@@ -804,8 +822,7 @@ document.getElementById("gerado").textContent = new Date(D.gerado_em + "T12:00")
 montarControlesEstados();
 montarMaterias();
 montarConsulta();
-montarTrechos();
+if (PRIVADO) { montarTrechos(); trechos(); }
 materias();
-trechos();
 cuidados();
 abrir((location.hash || "").slice(1), false);

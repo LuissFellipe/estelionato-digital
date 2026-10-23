@@ -1,6 +1,11 @@
-"""Gera painel/dados.js: os números do Anuário (marts do DuckDB), as fontes de
-citação e trechos do Caderno (consulta/fontes.json), os dados do falso
-advogado (falso_advogado.json) e o contorno dos estados.
+"""Gera os dados da página: os números do Anuário (marts do DuckDB), as fontes
+de citação (consulta/fontes.json), os dados do falso advogado
+(falso_advogado.json) e o contorno dos estados.
+
+Saem dois arquivos. painel/dados.js é o público, publicado no GitHub Pages:
+não leva os trechos do TCC nem a marcação das matérias que já estão nas
+fontes do pré-projeto. painel/dados-completo.js leva tudo e só é usado no
+artifact privado; ele e consulta/trechos_tcc.json ficam fora do git.
 
 Sai como .js, e não .json, para a página abrir com dois cliques no
 index.html: o navegador bloqueia fetch() de arquivo local, mas carrega um
@@ -52,7 +57,19 @@ def main() -> None:
         "funil": linhas(con, "select * from fct_funil order by ano"),
     }
     estados = json.loads((AQUI / "estados.geojson").read_text())
-    saida = AQUI / "dados.js"
+
+    publico = json.loads(json.dumps(dados))
+    for m in publico["falso_advogado"]["materias"]:
+        m.pop("no_tcc", None)
+    gravar(AQUI / "dados.js", {**publico, "privado": False}, estados)
+
+    trechos = RAIZ / "consulta" / "trechos_tcc.json"
+    if trechos.exists():
+        completo = {**dados, **json.loads(trechos.read_text()), "privado": True}
+        gravar(AQUI / "dados-completo.js", completo, estados)
+
+
+def gravar(saida: Path, dados: dict, estados: dict) -> None:
     saida.write_text(
         "// Gerado por painel/gerar.py. Não editar à mão.\n"
         f"window.DADOS = {json.dumps(dados, ensure_ascii=False, separators=(',', ':'))};\n"
