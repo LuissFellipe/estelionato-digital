@@ -369,3 +369,124 @@ select {
   .linha-tempo .ano-ponta:first-of-type { display: none; }
   .legenda-bins .bin i { width: 38px; }
 }
+
+
+/* ================================ Padrão de artigo científico ================================ */
+:root {
+  --pagina: #ffffff; --folha: #ffffff; --papel: #f5f5f3;
+  --tinta: #111111; --tinta-2: #333333; --tinta-3: #5f5f5f;
+  --fio: #cfcfcf; --fio-forte: #9a9a9a;
+  --acento: #1f3f73; --acento-fundo: #eaeef6; --link: #1f3f73;
+  --display: "Source Serif 4", "Times New Roman", Times, serif;
+  --texto: "Lato", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serifa: "Source Serif 4", "Times New Roman", Times, serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --pagina: #121212; --folha: #181818; --papel: #202020; --tinta: #ececec; --tinta-2: #cfcfcf; --tinta-3: #a0a0a0; --fio: #3a3a3a; --fio-forte: #666; --acento: #8fb4ee; --acento-fundo: #1c2a40; --link: #8fb4ee; } }
+:root[data-theme="dark"] { --pagina: #121212; --folha: #181818; --papel: #202020; --tinta: #ececec; --tinta-2: #cfcfcf; --tinta-3: #a0a0a0; --fio: #3a3a3a; --fio-forte: #666; --acento: #8fb4ee; --acento-fundo: #1c2a40; --link: #8fb4ee; }
+
+.artigo-pagina { font: 400 17.5px/1.62 var(--serifa); color: var(--tinta); counter-reset: sec fig tab; }
+.artigo { max-width: 960px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.artigo p, .artigo li { max-width: 72ch; }
+.artigo a { color: var(--link); }
+.artigo p { margin: 0 0 12px; color: var(--tinta); }
+.nav-artigo { position: sticky; top: 0; z-index: 20; background: var(--pagina); border-bottom: 1px solid var(--fio); padding-top: env(safe-area-inset-top, 0px); }
+.nav-interna { display: flex; gap: 22px; overflow-x: auto; scrollbar-width: none; padding-block: 10px; font: 700 13px var(--texto); letter-spacing: 0.02em; }
+.nav-interna::-webkit-scrollbar { display: none; }
+.nav-interna a { color: var(--tinta-2); text-decoration: none; white-space: nowrap; }
+.nav-interna a:hover { color: var(--acento); text-decoration: underline; }
+html { scroll-behavior: smooth; scroll-padding-top: 56px; }
+
+.cabecalho-artigo { padding: 36px 0 18px; text-align: left; border-bottom: 1px solid var(--tinta); }
+.tipo-doc { margin: 0 0 8px !important; font: 700 12px var(--texto) !important; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinta-3) !important; }
+.cabecalho-artigo h1 { margin: 0 0 12px; max-width: 28ch; font: 700 clamp(25px, 4.2vw, 34px)/1.22 var(--display); text-wrap: balance; max-width: 36ch; }
+.versao { margin: 0 !important; font: 400 14px var(--texto) !important; color: var(--tinta-3) !important; }
+
+.artigo section { margin-top: 28px; }
+.artigo h2 { margin: 36px 0 10px; font: 700 22px/1.25 var(--display); counter-increment: sec; counter-reset: sub; }
+.artigo h2::before { content: counter(sec) "\00a0\00a0"; }
+.artigo h2.titulo-resumo { counter-increment: none; font-size: 20px; text-transform: none; }
+.artigo h2.titulo-resumo::before { content: none; }
+.secao-sem-numero#resumo { background: var(--papel); border-left: 3px solid var(--tinta); padding: 4px 20px 8px; margin-top: 24px; }
+.secao-sem-numero#resumo h2 { margin-top: 14px; font-size: 17px; letter-spacing: 0.06em; text-transform: uppercase; }
+.palavras { font-size: 16px; }
+.artigo h3 { margin: 28px 0 8px; font: 700 18.5px/1.3 var(--display); counter-increment: sub; }
+.artigo h3::before { content: counter(sec) "." counter(sub) "\00a0\00a0"; }
+.artigo h3.titulo-apendice { counter-increment: none; margin-top: 36px; }
+.artigo h3.titulo-apendice::before { content: none; }
+.artigo h4.sub-sub { margin: 22px 0 6px; font: italic 600 17px var(--display); }
+.aviso-texto { font-style: italic; }
+
+/* Figuras: legenda embaixo, "Figura N – título." */
+.cartao-grafico { counter-increment: fig; display: flex; flex-direction: column-reverse; border: 0; border-top: 1px solid var(--fio); border-bottom: 1px solid var(--fio); border-radius: 0; padding: 12px 0 8px; margin: 20px 0 22px; background: none; }
+.cartao-grafico figcaption { margin: 8px 0 0; display: block; font: 400 14.5px/1.45 var(--serifa); }
+.titulo-grafico { font: 400 14.5px/1.45 var(--serifa); }
+.titulo-grafico::before { content: "Figura " counter(fig) " – "; font-weight: 700; }
+.sub-grafico { font: 400 14px/1.45 var(--serifa); color: var(--tinta-3); display: inline; margin-left: 4px; }
+.cartao-grafico .legenda-html, .cartao-grafico .controles { order: -1; }
+.grapher { border: 0; border-top: 1px solid var(--fio); border-bottom: 1px solid var(--fio); counter-increment: fig; background: none; margin: 18px 0 14px; }
+.grapher-topo h2 { font: 700 18px/1.3 var(--display); margin: 0; counter-increment: none; }
+.grapher-topo h2::before { content: "Figura " counter(fig) " – "; }
+.grapher-topo h2 .ano { font-size: 1em; color: var(--tinta-3); font-weight: 400; }
+.grapher-sub { font-size: 15px; font-family: var(--serifa); }
+.grapher-principal { padding: 12px 16px 12px 0; }
+.grapher-lateral { padding: 12px 0 12px 16px; }
+.grapher-rodape { font: 400 13.5px/1.4 var(--serifa); border-top: 0; padding-top: 0; }
+.grapher-rodape p { max-width: none; margin: 0; }
+.grapher-lateral .rotulo, .rotulo { font-family: var(--texto); }
+
+/* Painéis de números viram texto corrido */
+.destaques { display: block; margin: 0 0 16px; }
+.destaque { display: block; border: 0; background: none; border-radius: 0; padding: 0 0 8px 18px; position: relative; max-width: 72ch; }
+.destaque::before { content: "•"; position: absolute; left: 4px; }
+.destaque .valor { display: inline; font: 700 1em/1.5 var(--serifa); }
+.destaque .valor::after { content: " – "; font-weight: 400; }
+.destaque .rot { display: inline; color: var(--tinta); font-size: 1em; }
+.destaque .det, .destaque .fonte { display: block; font-size: 14.5px; color: var(--tinta-3); }
+
+/* Tabelas: legenda em cima, régua superior e inferior */
+.tabela-artigo { margin: 16px 0 20px; counter-increment: tab; }
+.tabela-artigo .legenda-tabela { font: 400 14.5px var(--serifa); margin-bottom: 6px; }
+.tabela-artigo .legenda-tabela b::before { content: "Tabela " counter(tab) " – "; }
+.tabela-artigo table { border-top: 2px solid var(--tinta); border-bottom: 2px solid var(--tinta); font: 400 14.5px var(--serifa); }
+.tabela-artigo thead th { border-bottom: 1px solid var(--tinta); background: none; color: var(--tinta); font: 700 14px var(--serifa); letter-spacing: 0; text-transform: none; position: static; }
+.tabela-artigo td, .tabela-artigo th { border-bottom: 0; padding: 5px 10px; white-space: normal; }
+.tabela-artigo td.num, .tabela-artigo th.num { text-align: right; font-family: var(--serifa); font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.tabela-artigo .nota-tabela { font: 400 13.5px var(--serifa); margin-top: 4px; }
+
+/* Limitações */
+.cuidado { display: block; border: 0; border-top: 1px solid var(--fio); border-radius: 0; background: none; padding: 10px 0; }
+.cuidado:last-child { border-bottom: 1px solid var(--fio); }
+.cuidado .gravidade { display: inline-block; margin: 0 8px 4px 0; vertical-align: 2px; }
+.cuidado h3 { display: inline; font: 700 17px var(--display); }
+.cuidado h3::before { content: none !important; }
+.cuidado p { font-size: 16px; margin: 4px 0 0; max-width: 72ch; }
+.cuidados { max-width: none; gap: 0; display: block; }
+
+/* Referências */
+.lista-refs { padding-left: 0; list-style: none; margin: 0; }
+.lista-refs li { margin: 0 0 10px; font: 400 15px/1.5 var(--serifa); max-width: none; overflow-wrap: anywhere; }
+.titulo-resumo { margin-top: 40px; }
+
+/* Cartões e controles interativos mais discretos */
+.ficha-estado, .ficha, .nota-metodo, .filtros, .rolagem, .lista-materias, .trecho { border-radius: 2px; box-shadow: none; }
+.seg, .abas-grapher, .abas-grapher button, .botao, select, .busca input, .chip { border-radius: 2px; font-family: var(--texto); }
+.segmentos.pequeno .seg { border-radius: 2px; }
+.alerta { border-radius: 2px; font-family: var(--texto); }
+.numero, .ficha-estado .num, .escala-rot b { font-family: var(--texto); }
+.materia a { font-family: var(--serifa); font-size: 16.5px; }
+.rodape { max-width: none; margin-top: 56px; font: 400 13.5px var(--serifa); }
+.rodape p { max-width: none; }
+.ficha-estado h3::before { content: none; }
+.ficha-estado h3, .ficha h3 { counter-increment: none; font: 700 22px/1.2 var(--display); }
+.ficha h3 { font: 700 12px var(--texto); }
+.bloco-citar h3::before, .ficha-corpo h3::before, .grupo-materias h3::before { content: none; }
+.grupo-materias h3, .bloco-citar h3, .ficha-corpo h3 { font: 700 12px var(--texto); counter-increment: none; }
+.faixa { display: none; }
+@media (max-width: 560px) { .artigo-pagina { font-size: 16.5px; } .nav-interna { gap: 16px; } .grapher-principal { padding-right: 0; } .grapher-lateral { padding-left: 0; } }
+
+/* Ordem visual numa figura (de cima para baixo): legenda/controles, gráfico, legenda da figura. */
+.cartao-grafico figcaption { order: 0; }
+.cartao-grafico .grafico, .cartao-grafico #escala-sp { order: 1; }
+.cartao-grafico .legenda-html, .cartao-grafico .controles { order: 2; }
+.titulo-grafico::after { content: "."; }
+.sub-grafico::before { content: " "; }

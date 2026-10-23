@@ -64,37 +64,22 @@ document.addEventListener("click", (ev) => {
 
 // -------------------------------------------------------------------- abas
 // Os trechos do TCC só existem nos dados do artifact privado (dados-completo.js).
-// No site público a aba nem é criada.
+// No site público a seção nem é criada.
 const PRIVADO = Boolean(D.privado && D.trechos);
 if (PRIVADO) {
-  document.getElementById("aba-cuidados").insertAdjacentHTML("beforebegin",
-    `<button class="aba" role="tab" id="aba-trechos" data-alvo="trechos">Trechos para o TCC <span class="n" id="n-trechos"></span></button>`);
-  document.getElementById("painel-cuidados").insertAdjacentHTML("beforebegin", `
-    <section class="painel" id="painel-trechos" role="tabpanel" aria-labelledby="aba-trechos" hidden>
-      <h2>Trechos para o TCC</h2>
-      <p class="intro">Trechos literais dos capítulos sobre estelionato das edições 2024, 2025 e 2026, conferidos página a página contra o PDF, com a citação ABNT e uma sugestão de uso no TCC sobre o golpe do falso advogado.</p>
-      <div class="barra-filtros">
-        <div class="segmentos" id="chips-trechos" role="group" aria-label="Filtrar por tema"></div>
-        <label class="busca"><span class="sr">Buscar nos trechos</span><input id="busca-trechos" type="search" placeholder="Buscar nos trechos" enterkeyhint="search" autocomplete="off"></label>
-      </div>
-      <div class="lista-trechos" id="lista-trechos"></div>
-    </section>`);
+  document.getElementById("apendice-privado").innerHTML = `
+    <h3 class="titulo-apendice" id="apendice-c">Apêndice C – Trechos do Anuário para o TCC (<span id="n-trechos"></span>)</h3>
+    <p class="intro">Trechos literais dos capítulos sobre estelionato das edições 2024, 2025 e 2026, conferidos página a página contra o PDF, com a citação ABNT e uma sugestão de uso no TCC sobre o golpe do falso advogado.</p>
+    <div class="barra-filtros">
+      <div class="segmentos" id="chips-trechos" role="group" aria-label="Filtrar por tema"></div>
+      <label class="busca"><span class="sr">Buscar nos trechos</span><input id="busca-trechos" type="search" placeholder="Buscar nos trechos" enterkeyhint="search" autocomplete="off"></label>
+    </div>
+    <div class="lista-trechos" id="lista-trechos"></div>`;
   document.getElementById("intro-materias").insertAdjacentHTML("beforeend", ` A etiqueta <span class="carimbo c-ok">Já nas suas fontes</span> marca o que já está no pré-projeto ou nos artigos da pasta do TCC.`);
 }
-const PAINEIS = ["estados", "comparativos", "falso", "materias", "consultar", ...(PRIVADO ? ["trechos"] : []), "cuidados"];
-let abaAtual = null;
-function abrir(id, rolar) {
-  if (!PAINEIS.includes(id)) id = "estados";
-  abaAtual = id;
-  for (const p of PAINEIS) {
-    document.getElementById("painel-" + p).hidden = p !== id;
-    document.getElementById("aba-" + p).setAttribute("aria-selected", String(p === id));
-  }
-  try { history.replaceState(null, "", "#" + id); } catch (e) {}
-  if (rolar) window.scrollTo({ top: 0 });
-  desenharAba(id);
-}
-document.querySelector(".abas").addEventListener("click", (ev) => { const b = ev.target.closest(".aba"); if (b) abrir(b.dataset.alvo, true); });
+// Sem abas: "abrir" só rola até a seção pedida.
+const ALVO = { consultar: "apendice-b", materias: "apendice-a" };
+function abrir(id) { document.getElementById(ALVO[id] || id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
 
 // ---------------------------------------------------------- base do ECharts
 const graficos = {};
@@ -106,7 +91,7 @@ function grafico(id) {
 function base() {
   return {
     animationDuration: 400,
-    textStyle: { fontFamily: "Archivo, system-ui, sans-serif", color: cor("--tinta-2") },
+    textStyle: { fontFamily: "Lato, system-ui, sans-serif", color: cor("--tinta-2") },
     tooltip: {
       backgroundColor: cor("--folha"), borderColor: cor("--fio-forte"), borderWidth: 1,
       textStyle: { color: cor("--tinta"), fontSize: 13 }, extraCssText: "box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:8px;max-width:300px;white-space:normal;",
@@ -475,11 +460,14 @@ function desenharComparativos() {
 
   // Funil
   const f = D.funil[D.funil.length - 1];
-  document.getElementById("funil").innerHTML = [
-    [fmt(f.boletins), `boletins de ocorrência de estelionato, ${f.ano}`, "Anuário 2026, Quadro 04 (p. 125)"],
-    [fmt(f.processos), "processos penais por estelionato", `${n1.format(f.processos_por_100_boletins)} para cada 100 boletins`],
-    [fmt(f.presos), "presos por estelionato", `${n1.format(f.presos_por_100_boletins)} para cada 100 boletins`],
-  ].map(([v, r, d]) => `<div class="destaque"><div class="valor">${v}</div><div class="rot">${r}</div><div class="det">${d}</div></div>`).join("");
+  document.getElementById("funil").innerHTML = `
+    <div class="legenda-tabela"><b></b>Boletins de ocorrência, processos penais e presos por estelionato no Brasil, ${f.ano}. Fonte: Anuário 2026, Quadro 04 (p. 125).</div>
+    <table><thead><tr><th>Etapa</th><th class="num">${D.funil[0].ano}</th><th class="num">${f.ano}</th><th class="num">Por 100 boletins (${f.ano})</th></tr></thead><tbody>
+      <tr><td>Boletins de ocorrência</td><td class="num">${fmt(D.funil[0].boletins)}</td><td class="num">${fmt(f.boletins)}</td><td class="num">100,0</td></tr>
+      <tr><td>Processos penais</td><td class="num">${fmt(D.funil[0].processos)}</td><td class="num">${fmt(f.processos)}</td><td class="num">${n1.format(f.processos_por_100_boletins)}</td></tr>
+      <tr><td>Presos</td><td class="num">${fmt(D.funil[0].presos)}</td><td class="num">${fmt(f.presos)}</td><td class="num">${n1.format(f.presos_por_100_boletins)}</td></tr>
+    </tbody></table>
+    <p class="nota-tabela">Nota: processos e presos de um ano não são os casos registrados naquele ano; a razão compara volumes e não acompanha casos.</p>`;
 }
 
 // ========================================================== FALSO ADVOGADO
@@ -816,27 +804,53 @@ function cuidados() {
   document.getElementById("cuidados").innerHTML = itens.map(([g, c, t, p, faca]) => `<article class="cuidado"><span class="carimbo ${c} gravidade">${g}</span><h3>${esc(t)}</h3><p>${esc(p)}</p><p class="faca">${esc(faca)}</p></article>`).join("");
 }
 
+// ============================================ texto gerado a partir dos dados
+function textoArtigo() {
+  const sn = D.serie_nacional, p = sn[0], u = sn[sn.length - 1];
+  const cob = D.cobertura.find((c) => c.ano === ULTIMO);
+  const bf = D.base_fixa.find((b) => b.ano === ULTIMO);
+  const re = D.revisoes_resumo.find((r) => r.crime === "eletronico");
+  document.getElementById("resumo-texto").textContent =
+    `Esta nota reúne os registros de estelionato e de estelionato por meio eletrônico publicados nas edições de 2023 a 2026 do Anuário Brasileiro de Segurança Pública e os confronta com fontes sobre o golpe do falso advogado (acórdãos de Tribunais de Justiça, denúncias a seccionais da OAB e Ouvidoria do CNJ). ` +
+    `Em ${u.ano} foram registrados ${fmt(u.registros)} estelionatos, ${pct(100 * (u.registros / p.registros - 1))} a mais que em ${p.ano}. ` +
+    `O estelionato eletrônico, porém, é informado por ${cob.ufs_que_informam} das 27 unidades da federação; entre elas, corresponde a ${pct(cob.pct_eletronico_entre_informantes)} do total. ` +
+    `O crescimento publicado do eletrônico em ${ULTIMO} (${pct(bf.cresc_publicado_pct, true)}) cai para ${pct(bf.cresc_base_fixa_pct, true)} quando se mantém a mesma base de ${bf.ufs_na_base} estados. ` +
+    `Dos ${re.publicados_duas_vezes} números estaduais de eletrônico publicados duas vezes, ${re.revisados} foram revisados na edição seguinte. ` +
+    `O Anuário não separa o golpe do falso advogado, e as fontes complementares usam períodos e critérios distintos, o que impede a comparação direta entre elas.`;
+
+  const eds = Object.entries(D.edicoes);
+  document.getElementById("tabela-edicoes").innerHTML = `
+    <div class="legenda-tabela"><b></b>Edições do Anuário usadas e localização da tabela de estelionato. Fonte: Fórum Brasileiro de Segurança Pública.</div>
+    <table><thead><tr><th>Edição</th><th>Anos de referência</th><th>Tabela</th><th class="num">Página (PDF)</th></tr></thead><tbody>
+    ${eds.map(([e, d]) => { const anos = [...new Set(D.registros.filter((r) => r.edicao === +e).map((r) => r.ano))].sort(); return `<tr><td>${d.ordinal} (${e})</td><td>${anos.join(" e ")}</td><td>${d.tabela}</td><td class="num">${d.pagina}</td></tr>`; }).join("")}
+    </tbody></table>
+    <p class="nota-tabela">Nota: a edição de 2025 numera a tabela como 15 na planilha Excel e como 19 no PDF; a tabela usa a numeração do PDF.</p>`;
+
+  const refs = eds.map(([e]) => referencia(+e));
+  refs.push(`VIEIRA, Victor Rodrigues Nascimento. Golpe do falso advogado e instituições bancárias: jurimetria e responsabilização civil nos TJs (2023–2025). Revista de Direito da ADVOCEF, ano XXII, n. 41, p. 537-564, maio 2026.`);
+  const urls = new Set([...FA.denuncias_oab.map((o) => o.url), ...FA.indicadores.map((i) => i.url).filter(Boolean)]);
+  FA.materias.filter((m) => urls.has(m.url)).forEach((m) => refs.push(referenciaMateria(m)));
+  document.getElementById("lista-refs").innerHTML = refs.sort((a, b) => a.localeCompare(b, "pt-BR")).map((r) => `<li>${esc(r)}</li>`).join("");
+}
+
 // ================================================================== início
-const desenhados = new Set();
-function desenharAba(id) {
+function desenharTudo() {
   requestAnimationFrame(() => {
-    if (id === "estados") desenharEstados();
-    if (id === "comparativos") desenharComparativos();
-    if (id === "falso") desenharFalso();
-    if (id === "consultar") ficha();
-    desenhados.add(id);
+    desenharEstados();
+    desenharComparativos();
+    desenharFalso();
     Object.values(graficos).forEach((g) => g.resize());
   });
 }
 function redesenharTudo() {
   // As cores vêm das variáveis CSS: ao trocar o tema, os gráficos são refeitos.
   Object.keys(graficos).forEach((k) => { graficos[k].dispose(); delete graficos[k]; });
-  desenharAba(abaAtual);
+  desenharTudo();
 }
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redesenharTudo);
 new MutationObserver(redesenharTudo).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 let espera;
-window.addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(() => desenharAba(abaAtual), 150); });
+window.addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(desenharTudo, 150); });
 
 document.getElementById("gerado").textContent = new Date(D.gerado_em + "T12:00").toLocaleDateString("pt-BR");
 montarControlesEstados();
@@ -845,4 +859,6 @@ montarConsulta();
 if (PRIVADO) { montarTrechos(); trechos(); }
 materias();
 cuidados();
-abrir((location.hash || "").slice(1), false);
+textoArtigo();
+ficha();
+desenharTudo();
