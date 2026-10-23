@@ -62,24 +62,8 @@ document.addEventListener("click", (ev) => {
   if (b) copiar(b, b.dataset.copiar);
 });
 
-// -------------------------------------------------------------------- abas
-// Os trechos do TCC só existem nos dados do artifact privado (dados-completo.js).
-// No site público a seção nem é criada.
-const PRIVADO = Boolean(D.privado && D.trechos);
-if (PRIVADO) {
-  document.getElementById("apendice-privado").innerHTML = `
-    <h3 class="titulo-apendice" id="apendice-c">Apêndice C – Trechos do Anuário para o TCC (<span id="n-trechos"></span>)</h3>
-    <p class="intro">Trechos literais dos capítulos sobre estelionato das edições 2024, 2025 e 2026, conferidos página a página contra o PDF, com a citação ABNT e uma sugestão de uso no TCC sobre o golpe do falso advogado.</p>
-    <div class="barra-filtros">
-      <div class="segmentos" id="chips-trechos" role="group" aria-label="Filtrar por tema"></div>
-      <label class="busca"><span class="sr">Buscar nos trechos</span><input id="busca-trechos" type="search" placeholder="Buscar nos trechos" enterkeyhint="search" autocomplete="off"></label>
-    </div>
-    <div class="lista-trechos" id="lista-trechos"></div>`;
-  document.getElementById("intro-materias").insertAdjacentHTML("beforeend", ` A etiqueta <span class="carimbo c-ok">Já nas suas fontes</span> marca o que já está no pré-projeto ou nos artigos da pasta do TCC.`);
-}
-// Sem abas: "abrir" só rola até a seção pedida.
-const ALVO = { consultar: "apendice-b", materias: "apendice-a" };
-function abrir(id) { document.getElementById(ALVO[id] || id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+// "abrir" só rola até a seção pedida.
+function abrir(id) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
 
 // ---------------------------------------------------------- base do ECharts
 const graficos = {};
@@ -321,11 +305,9 @@ function fichaEstado() {
       </dl>
       ${q && est.crime === "eletronico" ? `<p class="dica" style="margin-top:10px">${esc(q.motivo)}.</p>` : ""}
       <div class="acoes">
-        <button type="button" class="botao" id="ir-consulta">Abrir ficha de citação</button>
         <button type="button" class="botao" id="fechar-ficha">Fechar</button>
       </div>
     </div>`;
-  el.querySelector("#ir-consulta").addEventListener("click", () => { con.uf = uf; con.ano = est.ano; con.crime = est.crime; abrir("consultar", true); });
   el.querySelector("#fechar-ficha").addEventListener("click", () => { est.sel = null; desenharEstados(); });
 }
 
@@ -461,7 +443,7 @@ function desenharComparativos() {
   // Funil
   const f = D.funil[D.funil.length - 1];
   document.getElementById("funil").innerHTML = `
-    <div class="legenda-tabela"><b></b>Boletins de ocorrência, processos penais e presos por estelionato no Brasil, ${f.ano}. Fonte: Anuário 2026, Quadro 04 (p. 125).</div>
+    <div class="legenda-tabela">Boletins de ocorrência, processos penais e presos por estelionato no Brasil, ${f.ano}. Fonte: Anuário 2026, Quadro 04 (p. 125).</div>
     <table><thead><tr><th>Etapa</th><th class="num">${D.funil[0].ano}</th><th class="num">${f.ano}</th><th class="num">Por 100 boletins (${f.ano})</th></tr></thead><tbody>
       <tr><td>Boletins de ocorrência</td><td class="num">${fmt(D.funil[0].boletins)}</td><td class="num">${fmt(f.boletins)}</td><td class="num">100,0</td></tr>
       <tr><td>Processos penais</td><td class="num">${fmt(D.funil[0].processos)}</td><td class="num">${fmt(f.processos)}</td><td class="num">${n1.format(f.processos_por_100_boletins)}</td></tr>
@@ -633,9 +615,6 @@ document.getElementById("seg-disp-falso").addEventListener("click", (ev) => { co
 
 // ================================================================ MATÉRIAS
 const mat = { grupo: "todos", busca: "" };
-function referenciaMateria(m) {
-  return `${m.veiculo.replace(/ \(opinião\)$/, "").toUpperCase()}. ${m.titulo}. ${dataBR(m.data)}. Disponível em: ${m.url}. ${ACESSO}`;
-}
 function montarMaterias() {
   const grupos = [...new Set(FA.materias.map((m) => m.grupo))];
   document.getElementById("n-materias").textContent = FA.materias.length;
@@ -657,180 +636,10 @@ function materias() {
       <time datetime="${m.data}">${dataBR(m.data)}</time>
       <div>
         <a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.titulo)}</a>
-        <div class="meta"><span>${esc(m.veiculo)}</span>${!PRIVADO ? "" : m.no_tcc ? `<span class="carimbo c-ok">Já nas suas fontes</span>` : `<span class="carimbo c-neutro">Nova</span>`}</div>
+        <div class="meta"><span>${esc(m.veiculo)}</span></div>
         <p>${esc(m.resumo)}</p>
-        <button type="button" class="botao copiar-ref" data-copiar="${esc(referenciaMateria(m))}">Copiar referência</button>
       </div>
     </li>`).join("")}</ul></section>`).join("");
-}
-
-// =============================================================== CONSULTAR
-const con = { uf: "Minas Gerais", ano: ULTIMO, crime: "eletronico" };
-try { const s = JSON.parse(localStorage.getItem("golpe-em-registro") || "{}"); for (const k of ["uf", "ano", "crime"]) if (s[k] != null) con[k] = s[k]; } catch (e) {}
-const guardar = () => { try { localStorage.setItem("golpe-em-registro", JSON.stringify(con)); } catch (e) {} };
-const referencia = (e) => `${AUTOR}. ${edicao(e).titulo}. São Paulo: Fórum Brasileiro de Segurança Pública, ${e}. Disponível em: ${edicao(e).url}. ${ACESSO}`;
-const referenciaCapitulo = (e) => { const c = D.capitulos[String(e)]; return `${c.autores}. ${c.titulo}. In: ${AUTOR}. ${edicao(e).titulo}. São Paulo: Fórum Brasileiro de Segurança Pública, ${e}. p. ${c.paginas}. Disponível em: ${edicao(e).url}. ${ACESSO}`; };
-const chamada = (e) => `(${AUTOR}, ${e}, p. ${edicao(e).pagina})`;
-const blocoCitar = (titulo, texto) => `<div class="bloco-citar"><div class="cabeca"><h3>${esc(titulo)}</h3><button type="button" class="botao" data-copiar="${esc(texto)}">Copiar</button></div><p class="texto-citar">${esc(texto)}</p></div>`;
-
-function montarConsulta() {
-  const sel = document.getElementById("sel-uf");
-  sel.innerHTML = UFS.map((u) => `<option value="${esc(u.uf)}">${esc(u.uf)}</option>`).join("");
-  sel.addEventListener("change", () => { con.uf = sel.value; guardar(); ficha(); });
-  const seg = document.getElementById("seg-c-ano");
-  seg.innerHTML = ANOS.map((a) => `<button type="button" class="seg" data-valor="${a}">${a}</button>`).join("");
-  seg.addEventListener("click", (ev) => { const b = ev.target.closest(".seg"); if (!b) return; con.ano = +b.dataset.valor; guardar(); ficha(); });
-  document.getElementById("seg-c-crime").addEventListener("click", (ev) => { const b = ev.target.closest(".seg"); if (!b) return; con.crime = b.dataset.valor; guardar(); ficha(); });
-}
-
-function ficha() {
-  document.getElementById("sel-uf").value = con.uf;
-  document.querySelectorAll("#seg-c-ano .seg").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.valor === con.ano)));
-  document.querySelectorAll("#seg-c-crime .seg").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.valor === con.crime)));
-  const { uf, ano, crime } = con;
-  const v = versoes(uf, ano, crime);
-  const u = v[v.length - 1];
-  const el = document.getElementById("ficha");
-  if (!u) { el.innerHTML = `<div class="ficha-topo"><p>Sem dado para esta combinação.</p></div>`; return; }
-  const informado = u.situacao === "informado";
-  const ehBrasil = uf === "Brasil";
-  const q = crime === "eletronico" ? quebra(u.sigla) : null;
-  const cob = D.cobertura.find((c) => c.ano === ano);
-  const revisado = v.length > 1 && v[0].registros !== u.registros;
-  const total = ultima(uf, ano, "total");
-  const ed = edicao(u.edicao);
-
-  const carimbos = [informado ? `<span class="carimbo c-ok">Informado</span>` : `<span class="carimbo c-alerta">Não informado</span>`];
-  if (v.length > 1) carimbos.push(revisado ? `<span class="carimbo c-ambar">Revisado na edição ${u.edicao}</span>` : v[0].situacao !== u.situacao ? `<span class="carimbo c-ambar">Mudou de situação</span>` : `<span class="carimbo c-neutro">Igual nas duas edições</span>`);
-  if (q) carimbos.push(`<span class="carimbo c-alerta">Quebra de série em ${q.ano}</span>`);
-  if (ehBrasil && crime === "eletronico" && cob) carimbos.push(`<span class="carimbo c-alerta">Cobre ${cob.ufs_que_informam} de 27 UFs</span>`);
-
-  const avisos = [];
-  if (ehBrasil && crime === "eletronico" && cob) {
-    avisos.push(["forte", `Não inclui <b>${cob.ufs_sem_dado.join(", ")}</b>, que somam ${pct(100 - cob.pct_total_coberto)} do estelionato do país. Entre os estados que informam, o eletrônico é <b>${pct(cob.pct_eletronico_entre_informantes)}</b> do total; dividir pelo total nacional daria ${pct(cob.pct_eletronico_ingenuo)}, um número errado.`]);
-    const bf = D.base_fixa.find((b) => b.ano === ano);
-    if (bf && bf.cresc_publicado_pct != null) avisos.push(["medio", `De ${ano - 1} para ${ano}, o total publicado cresceu ${pct(bf.cresc_publicado_pct, true)}; nos ${bf.ufs_na_base} estados que informam desde 2021, sem quebra, <b>${pct(bf.cresc_base_fixa_pct, true)}</b>.`]);
-  }
-  if (!informado) avisos.push(["forte", `O estado não informou este número ao Anuário ("..." na tabela). Não é zero: escreva que o dado não está disponível.`]);
-  if (q) avisos.push(["forte", `${esc(q.motivo)}.${q.documentada ? "" : " O Anuário não explica a mudança em nota."}`]);
-  if (revisado) avisos.push(["medio", `A edição ${v[0].edicao} publicou <b>${fmt(v[0].registros)}</b>; a ${u.edicao} revisou para <b>${fmt(u.registros)}</b> (${pct(100 * (u.registros / v[0].registros - 1), true)}). Cite a edição ${u.edicao}.`]);
-  if (crime === "eletronico" && informado && !ehBrasil && total) avisos.push(["", `É <b>${pct(100 * u.registros / total.registros)}</b> do estelionato registrado no estado nesse ano (${fmt(total.registros)}).`]);
-  if (u.uf_nota_texto) avisos.push(["medio", `Nota do Anuário: ${esc(u.uf_nota_texto)}`]);
-  avisos.push(["", "São registros policiais, não crimes: a pesquisa de vitimização do FBSP estima 26,3 milhões de vítimas de golpe em um ano."]);
-
-  const lugar = ehBrasil ? "no Brasil" : `${PREP[uf] || "em"} ${uf}`;
-  let frase;
-  if (!informado) frase = `O estado não informou ao Anuário Brasileiro de Segurança Pública o número de registros de ${CRIME_NOME[crime]} em ${ano} ${chamada(u.edicao)}.`;
-  else if (ehBrasil && crime === "eletronico" && cob) frase = `Em ${ano}, os ${cob.ufs_que_informam} estados que informaram o dado somaram ${fmt(u.registros)} registros de estelionato por meio eletrônico; ${cob.ufs_sem_dado.join(", ")} não informaram ${chamada(u.edicao)}.`;
-  else frase = `Em ${ano}, foram registradas ${fmt(u.registros)} ocorrências de ${CRIME_NOME[crime]} ${lugar}, o que corresponde a ${n1.format(u.taxa)} registros por 100 mil habitantes ${chamada(u.edicao)}.`;
-
-  el.innerHTML = `
-    <div class="ficha-topo">
-      <p class="ficha-assunto"><b>${esc(uf)}</b> · ${ano} · ${CRIME_NOME[crime]}</p>
-      <div class="numero-linha"><span class="numero ${informado ? "" : "vazio"}">${informado ? fmt(u.registros) : "não informado"}</span>${informado ? `<span class="taxa">${n1.format(u.taxa)} por 100 mil hab.</span>` : ""}</div>
-      <div class="carimbos">${carimbos.join("")}</div>
-    </div>
-    <div class="ficha-corpo">
-      <section>
-        <h3>Versões publicadas</h3>
-        <ul class="versoes">${v.map((x) => `<li><span>Edição ${x.edicao} · ${edicao(x.edicao).tabela}, p. ${edicao(x.edicao).pagina}</span><span class="v">${x.situacao === "informado" ? fmt(x.registros) : "não informado"}</span></li>`).join("")}</ul>
-      </section>
-      <section>
-        <h3>Antes de citar</h3>
-        <ul class="avisos">${avisos.map(([g, t]) => `<li class="aviso ${g}">${t}</li>`).join("")}</ul>
-      </section>
-    </div>
-    <div class="citar">
-      ${blocoCitar("Frase pronta", frase)}
-      ${blocoCitar("Citação no texto", chamada(u.edicao))}
-      ${blocoCitar(`Referência (${ed.tabela}, p. ${ed.pagina})`, referencia(u.edicao))}
-    </div>`;
-}
-
-// ================================================================= TRECHOS
-const TEMAS = { "falso-advogado": "Falso advogado", "dados-pessoais": "Dados pessoais e engenharia social", "impunidade": "Impunidade", "acao-penal": "Ação penal", "subnotificacao": "Subnotificação", "limites": "Limites do dado", "crime-organizado": "Crime organizado" };
-const tre = { tema: "todos", busca: "" };
-function montarTrechos() {
-  const cont = {};
-  D.trechos.forEach((t) => (cont[t.tema] = (cont[t.tema] || 0) + 1));
-  document.getElementById("n-trechos").textContent = D.trechos.length;
-  const caixa = document.getElementById("chips-trechos");
-  caixa.innerHTML = [["todos", "Todos", D.trechos.length], ...Object.entries(TEMAS).filter(([k]) => cont[k]).map(([k, n]) => [k, n, cont[k]])]
-    .map(([k, n, c]) => `<button type="button" class="chip" data-tema="${k}">${esc(n)}<span class="n">${c}</span></button>`).join("");
-  caixa.addEventListener("click", (ev) => { const b = ev.target.closest("[data-tema]"); if (!b) return; tre.tema = b.dataset.tema; trechos(); });
-  document.getElementById("busca-trechos").addEventListener("input", (ev) => { tre.busca = ev.target.value; trechos(); });
-}
-function trechos() {
-  document.querySelectorAll("#chips-trechos .chip").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tema === tre.tema)));
-  const termo = tre.busca.trim().toLowerCase();
-  const lista = D.trechos.filter((t) => (tre.tema === "todos" || t.tema === tre.tema) && (!termo || (t.texto + " " + t.uso).toLowerCase().includes(termo)));
-  const caixa = document.getElementById("lista-trechos");
-  if (!lista.length) { caixa.innerHTML = `<p class="dica">Nenhum trecho com "${esc(tre.busca)}".</p>`; return; }
-  caixa.innerHTML = lista.map((t) => {
-    const c = D.capitulos[String(t.edicao)];
-    const cit = `(${c.chamada}, ${t.edicao}, p. ${t.pagina})`;
-    return `<article class="trecho">
-      <div class="trecho-meta"><span>${esc(TEMAS[t.tema])}</span><span class="fonte">${esc(cit)}</span></div>
-      <blockquote>“${esc(t.texto)}”</blockquote>
-      <p class="uso"><b>Como pode servir:</b> ${esc(t.uso)}</p>
-      ${t.obs ? `<p class="obs">${esc(t.obs)}</p>` : ""}
-      <div class="acoes">
-        <button type="button" class="botao" data-copiar="${esc(`“${t.texto}” ${cit}.`)}">Copiar citação</button>
-        <button type="button" class="botao" data-copiar="${esc(referenciaCapitulo(t.edicao))}">Copiar referência</button>
-      </div>
-    </article>`;
-  }).join("");
-}
-
-// ================================================================ CUIDADOS
-function cuidados() {
-  const cob = D.cobertura.find((c) => c.ano === ULTIMO);
-  const bf = D.base_fixa.find((b) => b.ano === ULTIMO);
-  const re = D.revisoes_resumo.find((r) => r.crime === "eletronico");
-  const rt = D.revisoes_resumo.find((r) => r.crime === "total");
-  const f = D.funil.find((x) => x.ano === ULTIMO);
-  const itens = [
-    ["Grave", "c-alerta", "O estelionato eletrônico não cobre o país inteiro", `${cob.ufs_sem_dado.join(", ")} não informam o eletrônico e somam ${pct(100 - cob.pct_total_coberto)} do estelionato de ${ULTIMO}. Os ${fmt(cob.eletronico_informado)} casos parecem ser ${pct(cob.pct_eletronico_ingenuo)} do total do Brasil, mas são ${pct(cob.pct_eletronico_entre_informantes)} entre os estados que informam.`, `"Nos ${cob.ufs_que_informam} estados que informam o dado…", nunca "no Brasil" sem ressalva.`],
-    ["Grave", "c-alerta", "O crescimento publicado mistura golpe novo com estado novo", `De ${ULTIMO - 1} para ${ULTIMO}, o eletrônico publicado cresceu ${pct(bf.cresc_publicado_pct, true)}; nos ${bf.ufs_na_base} estados de sempre, ${pct(bf.cresc_base_fixa_pct, true)}. Pernambuco começou a contar no fim de 2024.`, `para falar de crescimento, prefira o estelionato total ou diga que a base de estados mudou.`],
-    ["Grave", "c-alerta", "O Anuário não mede o falso advogado", `O golpe do falso advogado está dentro do estelionato, mas nenhuma tabela o separa. Os números do golpe vêm de outras fontes (Vieira, OAB, CNJ), cada uma contando uma coisa diferente.`, `"o Anuário não desagrega o golpe do falso advogado; os dados disponíveis vêm de…"`],
-    ["Grave", "c-alerta", "Há quebras de série que impedem comparar anos", D.quebras.map((q) => `${q.sigla} (${q.ano})`).join(", ") + ".", `não compare um ano antes e um depois da quebra no mesmo estado.`],
-    ["Atenção", "c-ambar", "As tabelas de Vieira (2026) não fecham em algumas linhas", "TJBA, TJPB, TJMA e as regiões Nordeste e Sul têm soma dos anos diferente do total impresso. Veja a nota na aba Falso advogado.", `cite os totais e mencione a diferença se usar os anos.`],
-    ["Atenção", "c-ambar", "Denúncias à OAB não se comparam entre seccionais", "Cada seccional conta num período: SP em ~1,5 ano até fev./2026, PR só 2025, ES até out./2026, MG até abr./2025.", `cite cada número com o período e a fonte, sem ranking entre estados.`],
-    ["Atenção", "c-ambar", "O número muda depois de publicado", `Dos ${re.publicados_duas_vezes} números estaduais de eletrônico publicados duas vezes, ${re.revisados} mudaram (${re.revisados_10pct} em 10% ou mais). No total, ${rt.revisados} de ${rt.publicados_duas_vezes}.`, `cite sempre a edição mais recente que traz o ano.`],
-    ["Atenção", "c-ambar", "Registro não é crime", `O Anuário conta boletins. A pesquisa do FBSP estima 26,3 milhões de vítimas de golpe em um ano, contra ${fmt(f.boletins)} boletins de estelionato em ${ULTIMO}.`, `"foram registradas X ocorrências", não "ocorreram X golpes".`],
-    ["Detalhe", "c-neutro", "Na edição 2025, a planilha e o PDF numeram a tabela de forma diferente", `No Excel, a aba T19 tem o título "Tabela 15"; no PDF é a Tabela 19, p. 105.`, `cite a tabela e a página do PDF.`],
-    ["Detalhe", "c-neutro", "Citação direta com mais de três linhas tem outro formato", "Pela ABNT, até três linhas vai no texto entre aspas; acima disso, parágrafo próprio, recuo de 4 cm, letra menor e sem aspas.", `ao colar um trecho longo, tire as aspas e aplique o recuo.`],
-  ];
-  document.getElementById("cuidados").innerHTML = itens.map(([g, c, t, p, faca]) => `<article class="cuidado"><span class="carimbo ${c} gravidade">${g}</span><h3>${esc(t)}</h3><p>${esc(p)}</p><p class="faca">${esc(faca)}</p></article>`).join("");
-}
-
-// ============================================ texto gerado a partir dos dados
-function textoArtigo() {
-  const sn = D.serie_nacional, p = sn[0], u = sn[sn.length - 1];
-  const cob = D.cobertura.find((c) => c.ano === ULTIMO);
-  const bf = D.base_fixa.find((b) => b.ano === ULTIMO);
-  const re = D.revisoes_resumo.find((r) => r.crime === "eletronico");
-  document.getElementById("resumo-texto").textContent =
-    `Esta nota reúne os registros de estelionato e de estelionato por meio eletrônico publicados nas edições de 2023 a 2026 do Anuário Brasileiro de Segurança Pública e os confronta com fontes sobre o golpe do falso advogado (acórdãos de Tribunais de Justiça, denúncias a seccionais da OAB e Ouvidoria do CNJ). ` +
-    `Em ${u.ano} foram registrados ${fmt(u.registros)} estelionatos, ${pct(100 * (u.registros / p.registros - 1))} a mais que em ${p.ano}. ` +
-    `O estelionato eletrônico, porém, é informado por ${cob.ufs_que_informam} das 27 unidades da federação; entre elas, corresponde a ${pct(cob.pct_eletronico_entre_informantes)} do total. ` +
-    `O crescimento publicado do eletrônico em ${ULTIMO} (${pct(bf.cresc_publicado_pct, true)}) cai para ${pct(bf.cresc_base_fixa_pct, true)} quando se mantém a mesma base de ${bf.ufs_na_base} estados. ` +
-    `Dos ${re.publicados_duas_vezes} números estaduais de eletrônico publicados duas vezes, ${re.revisados} foram revisados na edição seguinte. ` +
-    `O Anuário não separa o golpe do falso advogado, e as fontes complementares usam períodos e critérios distintos, o que impede a comparação direta entre elas.`;
-
-  const eds = Object.entries(D.edicoes);
-  document.getElementById("tabela-edicoes").innerHTML = `
-    <div class="legenda-tabela"><b></b>Edições do Anuário usadas e localização da tabela de estelionato. Fonte: Fórum Brasileiro de Segurança Pública.</div>
-    <table><thead><tr><th>Edição</th><th>Anos de referência</th><th>Tabela</th><th class="num">Página (PDF)</th></tr></thead><tbody>
-    ${eds.map(([e, d]) => { const anos = [...new Set(D.registros.filter((r) => r.edicao === +e).map((r) => r.ano))].sort(); return `<tr><td>${d.ordinal} (${e})</td><td>${anos.join(" e ")}</td><td>${d.tabela}</td><td class="num">${d.pagina}</td></tr>`; }).join("")}
-    </tbody></table>
-    <p class="nota-tabela">Nota: a edição de 2025 numera a tabela como 15 na planilha Excel e como 19 no PDF; a tabela usa a numeração do PDF.</p>`;
-
-  const refs = eds.map(([e]) => referencia(+e));
-  refs.push(`VIEIRA, Victor Rodrigues Nascimento. Golpe do falso advogado e instituições bancárias: jurimetria e responsabilização civil nos TJs (2023–2025). Revista de Direito da ADVOCEF, ano XXII, n. 41, p. 537-564, maio 2026.`);
-  const urls = new Set([...FA.denuncias_oab.map((o) => o.url), ...FA.indicadores.map((i) => i.url).filter(Boolean)]);
-  FA.materias.filter((m) => urls.has(m.url)).forEach((m) => refs.push(referenciaMateria(m)));
-  document.getElementById("lista-refs").innerHTML = refs.sort((a, b) => a.localeCompare(b, "pt-BR")).map((r) => `<li>${esc(r)}</li>`).join("");
 }
 
 // ================================================================== início
@@ -855,10 +664,5 @@ window.addEventListener("resize", () => { clearTimeout(espera); espera = setTime
 document.getElementById("gerado").textContent = new Date(D.gerado_em + "T12:00").toLocaleDateString("pt-BR");
 montarControlesEstados();
 montarMaterias();
-montarConsulta();
-if (PRIVADO) { montarTrechos(); trechos(); }
 materias();
-cuidados();
-textoArtigo();
-ficha();
 desenharTudo();

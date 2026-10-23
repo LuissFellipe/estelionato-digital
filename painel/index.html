@@ -11,45 +11,22 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="artigo-pagina">
-  <nav class="nav-artigo" aria-label="Seções do artigo">
-    <div class="artigo nav-interna">
-      <a href="#resumo">Resumo</a><a href="#introducao">1 Introdução</a><a href="#metodo">2 Dados e método</a><a href="#resultados">3 Resultados</a><a href="#limitacoes">4 Limitações</a><a href="#referencias">Referências</a><a href="#apendices">Apêndices</a>
+<body class="painel-pagina">
+  <nav class="nav-topo" aria-label="Seções">
+    <div class="miolo nav-interna">
+      <strong class="marca">Golpe em Registro</strong>
+      <a href="#estados">Estados</a><a href="#comparativos">Total × eletrônico</a><a href="#falso-advogado">Falso advogado</a><a href="#materias">Matérias</a>
     </div>
   </nav>
 
-  <main class="artigo">
-    <header class="cabecalho-artigo">
-      <p class="tipo-doc">Nota de pesquisa com dados interativos</p>
-      <h1>Golpe em registro: o que o Anuário Brasileiro de Segurança Pública mostra e não mostra sobre o estelionato eletrônico e o golpe do falso advogado</h1>
-      <p class="versao">Dados das edições de 2023 a 2026 do Anuário · versão de <span id="gerado"></span></p>
+  <main class="miolo">
+    <header class="cabecalho">
+      <h1>Estelionato e golpe digital no Brasil</h1>
+      <p>Registros policiais por estado (Anuário Brasileiro de Segurança Pública, 2018–2025) e o golpe do falso advogado. Dados de <span id="gerado"></span>. <a href="dbt/">Catálogo do dbt</a> · <a href="https://github.com/LuissFellipe/estelionato-digital">Código</a></p>
     </header>
 
-    <section class="secao-sem-numero" id="resumo">
-      <h2 class="titulo-resumo">Resumo</h2>
-      <p id="resumo-texto"></p>
-      <p class="palavras"><b>Palavras-chave:</b> estelionato; fraude eletrônica; golpe do falso advogado; registros policiais; Anuário Brasileiro de Segurança Pública.</p>
-    </section>
-
-    <section id="introducao">
-      <h2>Introdução</h2>
-      <p>O estelionato passou a ser o crime patrimonial mais registrado pelas polícias brasileiras. Desde a Lei 14.155/2021, a fraude cometida por meio eletrônico tem tipificação própria no art. 171, §§ 2º-A, 2º-B e 3º do Código Penal, o que permite, em tese, medir o golpe digital separadamente do estelionato comum.</p>
-      <p>Esta nota examina até que ponto os dados publicados pelo Fórum Brasileiro de Segurança Pública sustentam essa medição. Três perguntas orientam o texto: (i) quais estados registram mais estelionato e quanto dele é classificado como eletrônico; (ii) quanto os números mudam de uma edição para a seguinte; e (iii) o que se pode dizer, com outras fontes, sobre o golpe do falso advogado, que o Anuário não desagrega.</p>
-    </section>
-
-    <section id="metodo">
-      <h2>Dados e método</h2>
-      <p>Os registros por unidade da federação vêm das planilhas oficiais das edições de 2023, 2024, 2025 e 2026 do Anuário, que reúnem dados das secretarias estaduais de segurança pública. Cada edição traz dois anos, e o mais antigo aparece revisado. O projeto guarda as duas versões de cada ano e, nos gráficos, usa a mais recente. Os valores marcados com "..." na tabela original (estado que não informou) são tratados como dado ausente, nunca como zero. As taxas por 100 mil habitantes são as do próprio Anuário, calculadas com as estimativas populacionais do IBGE.</p>
-      <div class="tabela-artigo" id="tabela-edicoes"></div>
-      <p>Para o golpe do falso advogado, que o Anuário não separa, foram reunidas quatro fontes complementares, cada uma com período e critério próprios: o levantamento de acórdãos dos Tribunais de Justiça de Vieira (2026); as denúncias recebidas por seccionais da OAB; a Ouvidoria do Conselho Nacional de Justiça (CNJ); e a plataforma de verificação ConfirmADV, da OAB. Por não serem comparáveis entre si, os números dessas fontes são apresentados em gráficos separados.</p>
-      <p>O processamento (extração das planilhas, modelagem em dbt e DuckDB e testes de consistência) está documentado no <a href="dbt/">catálogo do dbt</a> e no <a href="https://github.com/LuissFellipe/estelionato-digital">repositório do projeto</a>.</p>
-    </section>
-
-    <section id="resultados">
-      <h2>Resultados</h2>
-
-      <h3>Distribuição por estado</h3>
-      <p>A figura abaixo permite alternar o ano, o tipo de estelionato e a medida. Passar o mouse ou tocar num estado, no mapa ou na lista, mostra os valores; clicar abre a ficha do estado.</p>
+    <section id="estados">
+      <h2>Estados</h2>
       <div id="fig-estados">
 <div class="grapher">
         <div class="grapher-principal">
@@ -100,7 +77,10 @@
       <article class="ficha-estado" id="ficha-estado" aria-live="polite"></article>
       </div>
 
-      <h3>Estelionato total e eletrônico</h3>
+    </section>
+
+    <section id="comparativos">
+      <h2>Estelionato total × eletrônico</h2>
       <div class="destaques" id="destaques-comp"></div>
       <figure class="cartao-grafico">
         <figcaption><span class="titulo-grafico" id="tit-empilhado"></span><span class="sub-grafico">Barras ordenadas pela parte eletrônica. SP, RJ e CE não separam o eletrônico e aparecem só com o total.</span></figcaption>
@@ -120,16 +100,19 @@
         <figcaption><span class="titulo-grafico">O estelionato no Brasil, 2018–2025</span><span class="sub-grafico">Registros de estelionato, golpe digital e tradicional somados. Última versão publicada de cada ano.</span></figcaption>
         <div class="grafico" id="g-serie" style="height:320px" role="img" aria-label="Série nacional de estelionato"></div>
       </figure>
-      <div class="tabela-artigo" id="funil"></div>
+      <div class="tabela-dados" id="funil"></div>
 
-      <h3>O golpe do falso advogado</h3>
-      <p class="aviso-texto">O Anuário não separa o falso advogado dos demais estelionatos. Os números desta seção vêm das fontes complementares descritas na seção 2 e não devem ser comparados entre si.</p>
+    </section>
+
+    <section id="falso-advogado">
+      <h2>Golpe do falso advogado</h2>
+      <p class="aviso-texto">O Anuário não separa o falso advogado dos demais estelionatos. Estes números vêm de fontes distintas (acórdãos dos TJs, OAB, CNJ), cada uma com período e critério próprios: não os compare entre si.</p>
       <div class="destaques" id="destaques-falso"></div>
 
       <h4 class="sub-sub">Distribuição por estado</h4>
       <div class="dupla">
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Acórdãos sobre o golpe nos Tribunais de Justiça, 2023–2025</span><span class="sub-grafico">Os 10 tribunais com mais acórdãos. Os outros 17 não aparecem no artigo.</span></figcaption>
+          <figcaption><span class="titulo-grafico">Acórdãos sobre o golpe nos Tribunais de Justiça, 2023–2025</span><span class="sub-grafico">Os 10 tribunais com mais acórdãos. Os outros 17 não aparecem.</span></figcaption>
           <div class="grafico mapa-medio" id="g-mapa-falso" role="img" aria-label="Mapa dos acórdãos por tribunal"></div>
         </figure>
         <figure class="cartao-grafico">
@@ -176,58 +159,16 @@
       </div>
     </section>
 
-    <section id="limitacoes">
-      <h2>Limitações e cuidados ao citar</h2>
-      <p>Os resultados acima têm limites que decorrem da própria origem dos dados. Eles foram medidos nas quatro edições e estão listados a seguir, com a forma de redação recomendada.</p>
-      <div class="cuidados" id="cuidados"></div>
-    </section>
-
-    <section class="secao-sem-numero" id="referencias">
-      <h2 class="titulo-resumo">Referências</h2>
-      <ol class="lista-refs" id="lista-refs"></ol>
-    </section>
-
-    <section class="secao-sem-numero" id="apendices">
-      <h2 class="titulo-resumo">Apêndices</h2>
-
-      <h3 class="titulo-apendice" id="apendice-a">Apêndice A – Matérias sobre o golpe do falso advogado (<span id="n-materias"></span>)</h3>
-      <p class="intro" id="intro-materias">Reportagens, notícias de tribunais e da OAB e o projeto de lei. Todos os links foram abertos e conferidos em 23/10/2026.</p>
+    <section id="materias">
+      <h2>Matérias sobre o falso advogado (<span id="n-materias"></span>)</h2>
       <div class="barra-filtros">
         <div class="segmentos" id="chips-materias" role="group" aria-label="Filtrar por assunto"></div>
         <label class="busca"><span class="sr">Buscar nas matérias</span><input id="busca-materias" type="search" placeholder="Buscar nas matérias" enterkeyhint="search" autocomplete="off"></label>
       </div>
       <div id="lista-materias"></div>
-
-      <h3 class="titulo-apendice" id="apendice-b">Apêndice B – Consulta e citação dos números</h3>
-      <p class="intro">Escolha o estado, o ano e o tipo. A ficha traz o número, a tabela e a página do Anuário de onde ele sai, as versões publicadas, o que pode estar errado com ele e a citação pronta.</p>
-      <div class="consulta">
-        <form class="filtros" id="filtros" onsubmit="return false">
-          <div class="campo">
-            <label class="rotulo" for="sel-uf">Estado</label>
-            <select id="sel-uf"></select>
-          </div>
-          <div class="campo">
-            <span class="rotulo" id="r-c-ano">Ano</span>
-            <div class="segmentos anos" role="group" aria-labelledby="r-c-ano" id="seg-c-ano"></div>
-          </div>
-          <div class="campo">
-            <span class="rotulo" id="r-c-crime">Tipo</span>
-            <div class="segmentos" role="group" aria-labelledby="r-c-crime" id="seg-c-crime">
-              <button type="button" class="seg" data-valor="total">Estelionato (total)</button>
-              <button type="button" class="seg" data-valor="eletronico">Por meio eletrônico</button>
-            </div>
-          </div>
-          <p class="dica">"Por meio eletrônico" é a fraude eletrônica do art. 171, §§ 2º-A, 2º-B e 3º do Código Penal, existente desde 2021.</p>
-        </form>
-        <article class="ficha" id="ficha"></article>
-      </div>
-
-      <div id="apendice-privado"></div>
     </section>
 
-    <footer class="rodape">
-      <p>Os números do Anuário são registros policiais, não crimes. Projeto independente, sem vínculo com o Fórum Brasileiro de Segurança Pública. <a href="https://github.com/LuissFellipe/estelionato-digital">Código no GitHub</a> · <a href="dbt/">Documentação do dbt</a>.</p>
-    </footer>
+    <footer class="rodape"><p>Registros policiais, não crimes. Projeto independente, sem vínculo com o Fórum Brasileiro de Segurança Pública.</p></footer>
   </main>
 
   <div id="dica" role="tooltip" hidden></div>
