@@ -1,0 +1,52 @@
+{
+  "edicoes": {
+    "2023": {
+      "ordinal": "17º",
+      "titulo": "17º Anuário Brasileiro de Segurança Pública",
+      "url": "https://forumseguranca.org.br/wp-content/uploads/2023/07/anuario-2023.pdf",
+      "tabela": "Tabela 15",
+      "pagina": 84
+    },
+    "2024": {
+      "ordinal": "18º",
+      "titulo": "18º Anuário Brasileiro de Segurança Pública",
+      "url": "https://publicacoes.forumseguranca.org.br/handle/123456789/253",
+      "tabela": "Tabela 15",
+      "pagina": 77
+    },
+    "2025": {
+      "ordinal": "19º",
+      "titulo": "19º Anuário Brasileiro de Segurança Pública",
+      "url": "https://publicacoes.forumseguranca.org.br/handle/123456789/279",
+      "tabela": "Tabela 19",
+      "pagina": 105
+    },
+    "2026": {
+      "ordinal": "20º",
+      "titulo": "20º Anuário Brasileiro de Segurança Pública 2026",
+      "url": "https://publicacoes.forumseguranca.org.br/handle/fbsp/305",
+      "tabela": "Tabela 17",
+      "pagina": 120
+    }
+  },
+  "capitulos": {
+    "2024": {
+      "autores": "ALCADIPANI, Rafael; LIMA, Renato Sérgio de; BUENO, Samira",
+      "chamada": "ALCADIPANI; LIMA; BUENO",
+      "titulo": "Estelionatos crescem, já superam os roubos e fortalecem o crime organizado no Brasil",
+      "paginas": "96-104"
+    },
+    "2025": {
+      "autores": "LIMA, Renato Sérgio de",
+      "chamada": "LIMA",
+      "titulo": "A consolidação de uma nova tendência nos crimes patrimoniais no Brasil",
+      "paginas": "106-113"
+    },
+    "2026": {
+      "autores": "BUENO, Samira; LIMA, Renato Sérgio de; SOBRAL, Isabela",
+      "chamada": "BUENO; LIMA; SOBRAL",
+      "titulo": "A consolidação dos estelionatos como principal crime patrimonial do país",
+      "paginas": "121-132"
+    }
+  }
+}

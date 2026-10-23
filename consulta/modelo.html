@@ -1,0 +1,707 @@
+<title>Caderno do Estelionato</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Mesa de consulta: faixa de cabeçalho com abas, e cada aba é uma ficha de
+   referência — número, carimbos de situação, citação pronta. */
+:root {
+  --papel: #f3f5f4;
+  --folha: #ffffff;
+  --tinta: #14202b;
+  --tinta-2: #4f5d69;
+  --tinta-3: #7b8792;
+  --fio: #d6dde2;
+  --fio-forte: #b8c3cb;
+  --acento: #0b5d73;
+  --acento-fundo: #e3eff2;
+  --carimbo: #b42318;
+  --carimbo-fundo: #fbeceb;
+  --ambar: #8a5a00;
+  --ambar-fundo: #fbf1dc;
+  --ok: #1b6b3a;
+  --ok-fundo: #e5f2ea;
+  --marca: #0b5d73;
+  --marca-2: #9aa9b4;
+  --sombra: 0 1px 2px rgba(20, 32, 43, 0.06), 0 4px 16px rgba(20, 32, 43, 0.06);
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --texto: "Archivo", system-ui, -apple-system, sans-serif;
+  --serifa: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel: #0f151b; --folha: #161f27; --tinta: #e6ecf0; --tinta-2: #a9b6c0; --tinta-3: #7d8a95;
+    --fio: #26323d; --fio-forte: #3a4855; --acento: #5bc0d8; --acento-fundo: #12303a;
+    --carimbo: #ff8b7e; --carimbo-fundo: #3a1b19; --ambar: #e8b54c; --ambar-fundo: #33280f;
+    --ok: #6fcf97; --ok-fundo: #12301f; --marca: #5bc0d8; --marca-2: #4f5f6c;
+    --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --papel: #0f151b; --folha: #161f27; --tinta: #e6ecf0; --tinta-2: #a9b6c0; --tinta-3: #7d8a95;
+  --fio: #26323d; --fio-forte: #3a4855; --acento: #5bc0d8; --acento-fundo: #12303a;
+  --carimbo: #ff8b7e; --carimbo-fundo: #3a1b19; --ambar: #e8b54c; --ambar-fundo: #33280f;
+  --ok: #6fcf97; --ok-fundo: #12301f; --marca: #5bc0d8; --marca-2: #4f5f6c;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  font: 400 16px/1.55 var(--texto);
+  -webkit-tap-highlight-color: transparent;
+}
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 6px; }
+
+.faixa {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  background: var(--folha);
+  border-bottom: 1px solid var(--fio);
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--folha);
+}
+.miolo {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.faixa .miolo { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 4px 24px; padding-block: 14px 0; }
+.marca-nome { display: flex; flex-direction: column; gap: 2px; padding-bottom: 12px; min-width: 0; }
+.marca-nome h1 {
+  margin: 0;
+  font: 800 22px/1.05 var(--display);
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+}
+.marca-nome p { margin: 0; font-size: 13px; color: var(--tinta-3); }
+.abas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.abas::-webkit-scrollbar { display: none; }
+.aba {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  min-height: 44px; padding: 0 14px;
+  font: 600 15px var(--texto); color: var(--tinta-2);
+  border-bottom: 2px solid transparent; white-space: nowrap;
+  user-select: none;
+}
+.aba:hover { color: var(--tinta); }
+.aba[aria-selected="true"] { color: var(--acento); border-bottom-color: var(--acento); }
+.aba .n { font: 500 12px var(--mono); color: var(--tinta-3); margin-left: 4px; }
+
+main.miolo { padding-block: 28px 64px; }
+.painel[hidden] { display: none; }
+.intro { max-width: 68ch; color: var(--tinta-2); margin: 0 0 20px; }
+.intro strong { color: var(--tinta); }
+
+/* ------------------------------------------------------------ consultar */
+.consulta { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+.filtros {
+  background: var(--folha); border: 1px solid var(--fio); border-radius: 12px;
+  padding: 18px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 96px);
+}
+.campo { display: grid; gap: 8px; }
+.rotulo { font: 600 12px var(--texto); letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinta-3); }
+select {
+  min-height: 44px; width: 100%; padding: 0 12px; font-size: 16px;
+  background: var(--papel); border: 1px solid var(--fio-forte); border-radius: 8px;
+}
+.segmentos { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg {
+  appearance: none; cursor: pointer; min-height: 44px; padding: 0 12px; flex: 1 1 auto;
+  border: 1px solid var(--fio-forte); border-radius: 8px; background: var(--folha);
+  font: 500 15px var(--texto); user-select: none;
+}
+.seg.ano { font-family: var(--mono); font-size: 14px; padding: 0 4px; }
+#seg-ano, #seg-tano { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#seg-tano { min-width: min(100%, 320px); }
+.legenda-graf { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--tinta-3); margin: 6px 0 0; }
+.legenda-graf i { width: 18px; border-top: 2px dashed var(--carimbo); }
+.seg[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--folha); }
+.seg:active, .aba:active, .botao:active, .chip:active { transform: scale(0.98); }
+.dica-filtro { font-size: 13px; color: var(--tinta-3); margin: 0; }
+
+.ficha {
+  background: var(--folha); border: 1px solid var(--fio); border-radius: 14px;
+  box-shadow: var(--sombra); overflow: hidden;
+}
+.ficha-topo { padding: 22px 24px 18px; border-bottom: 1px dashed var(--fio-forte); display: grid; gap: 10px; }
+.ficha-assunto { font-size: 14px; color: var(--tinta-2); margin: 0; }
+.ficha-assunto b { color: var(--tinta); font-weight: 600; }
+.numero-linha { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+.numero {
+  font: 800 clamp(44px, 9vw, 76px)/0.95 var(--display); font-stretch: 118%;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.numero.vazio { font-size: clamp(30px, 6vw, 44px); color: var(--tinta-3); font-stretch: 100%; }
+.taxa { font: 500 15px var(--mono); color: var(--tinta-2); }
+.carimbos { display: flex; flex-wrap: wrap; gap: 8px; }
+.carimbo {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px;
+  font: 600 11px var(--texto); letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1.5px solid currentColor; border-radius: 4px;
+}
+.c-ok { color: var(--ok); background: var(--ok-fundo); }
+.c-alerta { color: var(--carimbo); background: var(--carimbo-fundo); }
+.c-ambar { color: var(--ambar); background: var(--ambar-fundo); }
+.c-neutro { color: var(--tinta-2); background: var(--papel); }
+
+.ficha-corpo { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.ficha-corpo > section { padding: 20px 24px; min-width: 0; }
+.ficha-corpo > section + section { border-left: 1px solid var(--fio); }
+.ficha h3 { margin: 0 0 10px; font: 600 12px var(--texto); letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinta-3); }
+.grafico svg { display: block; width: 100%; height: auto; overflow: visible; }
+.grafico text { font: 500 11px var(--mono); fill: var(--tinta-3); }
+.grafico .rot { fill: var(--tinta); font-weight: 500; }
+.versoes { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+.versoes li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--fio); padding-bottom: 6px; }
+.versoes .v { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.avisos { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.aviso { font-size: 14px; color: var(--tinta-2); padding-left: 14px; position: relative; }
+.aviso::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--tinta-3); }
+.aviso.forte::before { background: var(--carimbo); }
+.aviso.medio::before { background: var(--ambar); }
+.aviso b { color: var(--tinta); }
+
+.citar { padding: 20px 24px 24px; border-top: 1px dashed var(--fio-forte); background: var(--papel); display: grid; gap: 14px; }
+.bloco-citar { display: grid; gap: 6px; }
+.bloco-citar .cabeca { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.bloco-citar .texto-citar {
+  margin: 0; padding: 12px 14px; background: var(--folha); border: 1px solid var(--fio);
+  border-radius: 8px; font: 400 15px/1.55 var(--serifa); overflow-wrap: anywhere;
+}
+.botao {
+  appearance: none; cursor: pointer; min-height: 36px; padding: 0 12px;
+  border: 1px solid var(--fio-forte); border-radius: 8px; background: var(--folha);
+  font: 600 13px var(--texto); color: var(--acento); user-select: none; white-space: nowrap;
+}
+.botao:hover { border-color: var(--acento); }
+.botao.feito { color: var(--ok); border-color: var(--ok); }
+
+/* -------------------------------------------------------------- trechos */
+.barra-trechos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px; }
+.chip {
+  appearance: none; cursor: pointer; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid var(--fio-forte); background: var(--folha); font: 500 14px var(--texto); user-select: none;
+}
+.chip[aria-pressed="true"] { background: var(--tinta); color: var(--folha); border-color: var(--tinta); }
+.chip .n { font: 500 12px var(--mono); opacity: 0.7; margin-left: 4px; }
+.busca { flex: 1 1 220px; min-width: 0; }
+.busca input {
+  width: 100%; min-height: 44px; padding: 0 14px; font-size: 16px;
+  background: var(--folha); border: 1px solid var(--fio-forte); border-radius: 8px;
+}
+.lista-trechos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.trecho {
+  background: var(--folha); border: 1px solid var(--fio); border-radius: 12px;
+  padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0;
+}
+.trecho-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--tinta-3); }
+.trecho-meta .fonte { font-family: var(--mono); color: var(--tinta-2); }
+.trecho blockquote {
+  margin: 0; font: 400 18px/1.55 var(--serifa); color: var(--tinta);
+  text-indent: -0.45em; padding-left: 0.45em;
+}
+.trecho .uso { font-size: 14px; color: var(--tinta-2); margin: 0; }
+.trecho .uso b { color: var(--tinta); }
+.trecho .obs { font-size: 13px; color: var(--ambar); background: var(--ambar-fundo); border-radius: 6px; padding: 8px 10px; margin: 0; }
+.trecho .acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.vazio-lista { color: var(--tinta-3); }
+
+/* ------------------------------------------------------------- cuidados */
+.cuidados { display: grid; gap: 14px; max-width: 820px; counter-reset: c; }
+.cuidado {
+  background: var(--folha); border: 1px solid var(--fio); border-radius: 12px; padding: 18px 20px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px;
+}
+.cuidado .gravidade { grid-row: span 3; align-self: start; }
+.cuidado h3 { margin: 0; font: 700 18px/1.3 var(--display); font-stretch: 105%; text-wrap: balance; }
+.cuidado p { margin: 0; color: var(--tinta-2); font-size: 15px; }
+.cuidado .faca { color: var(--tinta); }
+.cuidado .faca::before { content: "Como escrever: "; font-weight: 600; }
+
+/* --------------------------------------------------------------- tabela */
+.tabela-controles { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin-bottom: 16px; }
+.tabela-controles .campo { min-width: 0; }
+.rolagem { overflow-x: auto; background: var(--folha); border: 1px solid var(--fio); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 10px 12px; border-bottom: 1px solid var(--fio); text-align: left; white-space: nowrap; }
+th { font: 600 12px var(--texto); letter-spacing: 0.05em; text-transform: uppercase; color: var(--tinta-3); background: var(--folha); position: sticky; top: 0; }
+th button { appearance: none; background: none; border: 0; padding: 6px 0; cursor: pointer; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; }
+th[aria-sort] button { color: var(--acento); }
+td.num, th.num { text-align: right; }
+td.num { font-family: var(--mono); font-size: 13px; }
+tr.brasil td { font-weight: 600; background: var(--papel); }
+tbody tr:hover td { background: var(--acento-fundo); }
+.rodape { margin-top: 40px; font-size: 13px; color: var(--tinta-3); max-width: 80ch; }
+
+@media (max-width: 860px) {
+  .consulta { grid-template-columns: minmax(0, 1fr); }
+  .filtros { position: static; }
+  .ficha-corpo { grid-template-columns: minmax(0, 1fr); }
+  .ficha-corpo > section + section { border-left: 0; border-top: 1px solid var(--fio); }
+}
+@media (max-width: 520px) {
+  .ficha-topo, .ficha-corpo > section, .citar { padding-left: 16px; padding-right: 16px; }
+  .cuidado { grid-template-columns: minmax(0, 1fr); }
+  .cuidado .gravidade { grid-row: auto; justify-self: start; }
+  .trecho blockquote { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="faixa">
+  <div class="miolo">
+    <div class="marca-nome">
+      <h1>Caderno do Estelionato</h1>
+      <p>Anuário Brasileiro de Segurança Pública, edições 2023 a 2026</p>
+    </div>
+    <nav class="abas" role="tablist" aria-label="Seções">
+      <button class="aba" role="tab" id="aba-consultar" data-alvo="consultar">Consultar</button>
+      <button class="aba" role="tab" id="aba-trechos" data-alvo="trechos">Trechos para o TCC <span class="n" id="n-trechos"></span></button>
+      <button class="aba" role="tab" id="aba-cuidados" data-alvo="cuidados">Cuidados ao citar</button>
+      <button class="aba" role="tab" id="aba-tabela" data-alvo="tabela">Tabela</button>
+    </nav>
+  </div>
+</header>
+
+<main class="miolo">
+  <section class="painel" id="painel-consultar" role="tabpanel" aria-labelledby="aba-consultar">
+    <p class="intro">Escolha o estado, o ano e o tipo de estelionato. A ficha mostra o número, a página do Anuário de onde ele sai, as versões publicadas e o que pode estar errado com ele, com a citação pronta para copiar.</p>
+    <div class="consulta">
+      <form class="filtros" id="filtros" onsubmit="return false">
+        <div class="campo">
+          <label class="rotulo" for="sel-uf">Estado</label>
+          <select id="sel-uf"></select>
+        </div>
+        <div class="campo">
+          <span class="rotulo" id="r-ano">Ano</span>
+          <div class="segmentos" role="group" aria-labelledby="r-ano" id="seg-ano"></div>
+        </div>
+        <div class="campo">
+          <span class="rotulo" id="r-crime">Tipo</span>
+          <div class="segmentos" role="group" aria-labelledby="r-crime" id="seg-crime">
+            <button type="button" class="seg" data-crime="total">Estelionato (total)</button>
+            <button type="button" class="seg" data-crime="eletronico">Por meio eletrônico</button>
+          </div>
+        </div>
+        <p class="dica-filtro">"Por meio eletrônico" é a fraude eletrônica do art. 171, §§ 2º-A, 2º-B e 3º do Código Penal, existente desde 2021.</p>
+      </form>
+      <article class="ficha" id="ficha" aria-live="polite"></article>
+    </div>
+  </section>
+
+  <section class="painel" id="painel-trechos" role="tabpanel" aria-labelledby="aba-trechos" hidden>
+    <p class="intro">Trechos literais dos capítulos sobre estelionato das edições 2024, 2025 e 2026, conferidos página a página contra o PDF. Cada um vem com a citação no formato ABNT e uma sugestão de como ele pode servir ao TCC sobre o golpe do falso advogado.</p>
+    <div class="barra-trechos">
+      <div class="segmentos" id="chips" role="group" aria-label="Filtrar por tema"></div>
+      <label class="busca"><span class="rotulo" style="position:absolute;left:-9999px">Buscar nos trechos</span><input id="busca" type="search" placeholder="Buscar palavra nos trechos" enterkeyhint="search" autocomplete="off"></label>
+    </div>
+    <div class="lista-trechos" id="lista-trechos"></div>
+  </section>
+
+  <section class="painel" id="painel-cuidados" role="tabpanel" aria-labelledby="aba-cuidados" hidden>
+    <p class="intro">O que pode dar errado ao citar estes números, medido nos próprios dados das quatro edições.</p>
+    <div class="cuidados" id="cuidados"></div>
+  </section>
+
+  <section class="painel" id="painel-tabela" role="tabpanel" aria-labelledby="aba-tabela" hidden>
+    <div class="tabela-controles">
+      <div class="campo">
+        <span class="rotulo" id="r-tano">Ano</span>
+        <div class="segmentos" role="group" aria-labelledby="r-tano" id="seg-tano"></div>
+      </div>
+      <div class="campo">
+        <span class="rotulo" id="r-tcrime">Tipo</span>
+        <div class="segmentos" role="group" aria-labelledby="r-tcrime" id="seg-tcrime">
+          <button type="button" class="seg" data-crime="total">Total</button>
+          <button type="button" class="seg" data-crime="eletronico">Eletrônico</button>
+        </div>
+      </div>
+    </div>
+    <div class="rolagem"><table id="tabela"></table></div>
+    <p class="rodape">Toque numa linha para abrir a ficha do estado. Os números são a versão mais recente publicada de cada ano.</p>
+  </section>
+
+  <p class="rodape">Fonte: Fórum Brasileiro de Segurança Pública, Anuário Brasileiro de Segurança Pública, edições 2023 a 2026 (planilhas oficiais). Os números são registros policiais, não crimes. Projeto independente, sem vínculo com o FBSP.</p>
+</main>
+
+<script>
+const D = /*__DADOS__*/null;
+
+const nf = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+const n1 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const fmt = (v) => (v == null ? "–" : nf.format(v));
+const pct = (v, sinal) => (v == null ? "–" : (sinal && v > 0 ? "+" : "") + n1.format(v) + "%");
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const MESES = ["jan.", "fev.", "mar.", "abr.", "maio", "jun.", "jul.", "ago.", "set.", "out.", "nov.", "dez."];
+const hoje = new Date();
+const ACESSO = `Acesso em: ${hoje.getDate()} ${MESES[hoje.getMonth()]} ${hoje.getFullYear()}.`;
+const AUTOR = "FÓRUM BRASILEIRO DE SEGURANÇA PÚBLICA";
+// Preposição de cada UF na frase pronta ("no Paraná", "na Bahia", "em Goiás").
+const PREP = {
+  "Acre": "no", "Amapá": "no", "Amazonas": "no", "Bahia": "na", "Ceará": "no", "Distrito Federal": "no",
+  "Espírito Santo": "no", "Maranhão": "no", "Pará": "no", "Paraíba": "na", "Paraná": "no", "Piauí": "no",
+  "Rio de Janeiro": "no", "Rio Grande do Norte": "no", "Rio Grande do Sul": "no", "Tocantins": "no",
+};
+const CRIME_NOME = { total: "estelionato", eletronico: "estelionato por meio eletrônico" };
+const TEMAS = {
+  "falso-advogado": "Falso advogado",
+  "dados-pessoais": "Dados pessoais e engenharia social",
+  "impunidade": "Impunidade",
+  "acao-penal": "Ação penal",
+  "subnotificacao": "Subnotificação",
+  "limites": "Limites do dado",
+  "crime-organizado": "Crime organizado",
+};
+
+// ------------------------------------------------------------ índices
+const ANOS = [...new Set(D.registros.map((r) => r.ano))].sort();
+const UFS = [...new Map(D.registros.map((r) => [r.uf, r])).values()]
+  .sort((a, b) => (a.uf === "Brasil" ? -1 : b.uf === "Brasil" ? 1 : a.uf.localeCompare(b.uf, "pt-BR")));
+const versoes = (uf, ano, crime) => D.registros.filter((r) => r.uf === uf && r.ano === ano && r.crime === crime).sort((a, b) => a.edicao - b.edicao);
+const ultima = (uf, ano, crime) => { const v = versoes(uf, ano, crime); return v[v.length - 1]; };
+const quebra = (sigla) => D.quebras.find((q) => q.sigla === sigla);
+const edicao = (e) => D.edicoes[String(e)];
+
+function referencia(e) {
+  const ed = edicao(e);
+  return `${AUTOR}. ${ed.titulo}. São Paulo: Fórum Brasileiro de Segurança Pública, ${e}. Disponível em: ${ed.url}. ${ACESSO}`;
+}
+function referenciaCapitulo(e) {
+  const c = D.capitulos[String(e)];
+  const ed = edicao(e);
+  return `${c.autores}. ${c.titulo}. In: ${AUTOR}. ${ed.titulo}. São Paulo: Fórum Brasileiro de Segurança Pública, ${e}. p. ${c.paginas}. Disponível em: ${ed.url}. ${ACESSO}`;
+}
+const chamada = (e) => `(${AUTOR}, ${e}, p. ${edicao(e).pagina})`;
+
+// ------------------------------------------------------------ copiar
+function copiar(botao, texto) {
+  const feito = () => {
+    const antes = botao.textContent;
+    botao.textContent = "Copiado";
+    botao.classList.add("feito");
+    setTimeout(() => { botao.textContent = antes; botao.classList.remove("feito"); }, 1600);
+  };
+  const selecionar = () => {
+    const alvo = botao.closest(".bloco-citar, .trecho")?.querySelector(".texto-citar, blockquote");
+    if (!alvo) return;
+    const r = document.createRange();
+    r.selectNodeContents(alvo);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    botao.textContent = "Selecionado: use Ctrl+C";
+  };
+  try {
+    navigator.clipboard.writeText(texto).then(feito, selecionar);
+  } catch (e) { selecionar(); }
+}
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-copiar]");
+  if (b) copiar(b, b.dataset.copiar);
+});
+
+// ------------------------------------------------------------ estado
+const estado = { uf: "Minas Gerais", ano: ANOS[ANOS.length - 1], crime: "eletronico", tema: "todos", busca: "", tano: ANOS[ANOS.length - 1], tcrime: "total", ordem: ["uf", 1] };
+try {
+  const salvo = JSON.parse(localStorage.getItem("caderno-estelionato") || "{}");
+  for (const k of ["uf", "ano", "crime"]) if (salvo[k] != null) estado[k] = salvo[k];
+} catch (e) {}
+function guardar() {
+  try { localStorage.setItem("caderno-estelionato", JSON.stringify({ uf: estado.uf, ano: estado.ano, crime: estado.crime })); } catch (e) {}
+}
+
+// ------------------------------------------------------------ abas
+const PAINEIS = ["consultar", "trechos", "cuidados", "tabela"];
+function abrir(id, rolar) {
+  if (!PAINEIS.includes(id)) id = "consultar";
+  for (const p of PAINEIS) {
+    document.getElementById("painel-" + p).hidden = p !== id;
+    document.getElementById("aba-" + p).setAttribute("aria-selected", String(p === id));
+  }
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+  if (rolar) window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".aba").forEach((b) => b.addEventListener("click", () => abrir(b.dataset.alvo, true)));
+
+// ------------------------------------------------------------ consultar
+function montarFiltros() {
+  const sel = document.getElementById("sel-uf");
+  sel.innerHTML = UFS.map((u) => `<option value="${esc(u.uf)}">${esc(u.uf)}</option>`).join("");
+  sel.value = estado.uf;
+  sel.addEventListener("change", () => { estado.uf = sel.value; guardar(); ficha(); });
+  const segAno = document.getElementById("seg-ano");
+  segAno.innerHTML = ANOS.map((a) => `<button type="button" class="seg ano" data-ano="${a}">${a}</button>`).join("");
+  segAno.addEventListener("click", (ev) => { const b = ev.target.closest("[data-ano]"); if (!b) return; estado.ano = +b.dataset.ano; guardar(); ficha(); });
+  document.getElementById("seg-crime").addEventListener("click", (ev) => { const b = ev.target.closest("[data-crime]"); if (!b) return; estado.crime = b.dataset.crime; guardar(); ficha(); });
+}
+function marcarFiltros() {
+  document.getElementById("sel-uf").value = estado.uf;
+  document.querySelectorAll("#seg-ano .seg").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.ano === estado.ano)));
+  document.querySelectorAll("#seg-crime .seg").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.crime === estado.crime)));
+}
+
+function grafico(uf, crime, anoSel) {
+  const pontos = ANOS.map((a) => {
+    const v = versoes(uf, a, crime);
+    const u = v[v.length - 1];
+    return { ano: a, valor: u && u.situacao === "informado" ? u.registros : null, primeira: v[0] && v[0].situacao === "informado" ? v[0].registros : null, n: v.length };
+  });
+  const valores = pontos.flatMap((p) => [p.valor, p.primeira]).filter((v) => v != null);
+  const W = 420, H = 170, m = { t: 22, r: 12, b: 26, l: 12 };
+  if (!valores.length) return `<p class="aviso">Sem número publicado em nenhum ano.</p>`;
+  const max = Math.max(...valores) * 1.12;
+  const passo = (W - m.l - m.r) / pontos.length;
+  const y = (v) => H - m.b - (v / max) * (H - m.t - m.b);
+  const w = Math.min(34, passo * 0.5);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Registros por ano">`;
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--fio-forte)"/>`;
+  pontos.forEach((p, i) => {
+    const cx = m.l + passo * i + passo / 2;
+    const sel = p.ano === anoSel;
+    if (p.valor != null) {
+      const h = H - m.b - y(p.valor);
+      const r = Math.min(4, h);
+      s += `<path d="M${cx - w / 2},${H - m.b}V${y(p.valor) + r}Q${cx - w / 2},${y(p.valor)} ${cx - w / 2 + r},${y(p.valor)}H${cx + w / 2 - r}Q${cx + w / 2},${y(p.valor)} ${cx + w / 2},${y(p.valor) + r}V${H - m.b}Z" fill="${sel ? "var(--marca)" : "var(--marca-2)"}"><title>${p.ano}: ${fmt(p.valor)}</title></path>`;
+      if (p.n > 1 && p.primeira != null && p.primeira !== p.valor) {
+        s += `<line x1="${cx - w / 2 - 4}" x2="${cx + w / 2 + 4}" y1="${y(p.primeira)}" y2="${y(p.primeira)}" stroke="var(--carimbo)" stroke-width="2" stroke-dasharray="3 2"><title>Primeira publicação: ${fmt(p.primeira)}</title></line>`;
+      }
+      if (sel) s += `<text class="rot" x="${cx}" y="${y(Math.max(p.valor, p.primeira ?? 0)) - 7}" text-anchor="middle">${fmt(p.valor)}</text>`;
+    } else {
+      s += `<rect x="${cx - w / 2}" y="${H - m.b - 18}" width="${w}" height="18" rx="3" fill="none" stroke="var(--fio-forte)" stroke-dasharray="3 3"/>`;
+    }
+    s += `<text x="${cx}" y="${H - 8}" text-anchor="middle" style="${sel ? "fill:var(--tinta)" : ""}">${p.ano}</text>`;
+  });
+  return s + `</svg>`;
+}
+
+function ficha() {
+  marcarFiltros();
+  const { uf, ano, crime } = estado;
+  const v = versoes(uf, ano, crime);
+  const u = v[v.length - 1];
+  const el = document.getElementById("ficha");
+  if (!u) { el.innerHTML = `<div class="ficha-topo"><p>Sem dado para esta combinação.</p></div>`; return; }
+  const informado = u.situacao === "informado";
+  const ehBrasil = uf === "Brasil";
+  const q = crime === "eletronico" ? quebra(u.sigla) : null;
+  const cob = D.cobertura.find((c) => c.ano === ano);
+  const revisado = v.length > 1 && v[0].registros !== u.registros;
+  const total = ultima(uf, ano, "total");
+  const ed = edicao(u.edicao);
+
+  const carimbos = [];
+  carimbos.push(informado ? `<span class="carimbo c-ok">Informado</span>` : `<span class="carimbo c-alerta">Não informado</span>`);
+  if (v.length > 1) {
+    if (revisado) carimbos.push(`<span class="carimbo c-ambar">Revisado na edição ${u.edicao}</span>`);
+    else if (v[0].situacao !== u.situacao) carimbos.push(`<span class="carimbo c-ambar">Mudou de situação</span>`);
+    else carimbos.push(`<span class="carimbo c-neutro">Igual nas duas edições</span>`);
+  }
+  if (q) carimbos.push(`<span class="carimbo c-alerta">Quebra de série em ${q.ano}</span>`);
+  if (ehBrasil && crime === "eletronico" && cob) carimbos.push(`<span class="carimbo c-alerta">Cobre ${cob.ufs_que_informam} de 27 UFs</span>`);
+
+  const avisos = [];
+  if (ehBrasil && crime === "eletronico" && cob) {
+    avisos.push(["forte", `Não inclui <b>${cob.ufs_sem_dado.join(", ")}</b>. Os estados que informam somam ${pct(cob.pct_total_coberto)} do estelionato do país. Entre eles, o eletrônico é <b>${pct(cob.pct_eletronico_entre_informantes)}</b> do total; dividir pelo total nacional daria ${pct(cob.pct_eletronico_ingenuo)}, um número errado.`]);
+    const bf = D.base_fixa.find((b) => b.ano === ano);
+    if (bf && bf.cresc_publicado_pct != null) avisos.push(["medio", `De ${ano - 1} para ${ano}, o total publicado cresceu ${pct(bf.cresc_publicado_pct, true)}; nos ${bf.ufs_na_base} estados que informam desde 2021, sem quebra, cresceu <b>${pct(bf.cresc_base_fixa_pct, true)}</b>. A diferença vem de estados que entraram na conta.`]);
+  }
+  if (!informado) avisos.push(["forte", `O estado não informou este número ao Anuário ("..." na tabela). Não é zero: escreva que o dado não está disponível.`]);
+  if (q) avisos.push(["forte", `${q.motivo}.${q.documentada ? "" : " O Anuário não explica a mudança em nota."}`]);
+  if (revisado) avisos.push(["medio", `A edição ${v[0].edicao} publicou <b>${fmt(v[0].registros)}</b>; a ${u.edicao} revisou para <b>${fmt(u.registros)}</b> (${pct(100 * (u.registros / v[0].registros - 1), true)}). Cite a edição ${u.edicao}.`]);
+  if (crime === "eletronico" && informado && !ehBrasil && total && total.registros) avisos.push(["", `É <b>${pct(100 * u.registros / total.registros)}</b> do estelionato registrado no estado nesse ano (${fmt(total.registros)}).`]);
+  if (u.uf_nota_texto) avisos.push(["medio", `Nota do Anuário: ${esc(u.uf_nota_texto)}`]);
+  avisos.push(["", "São registros policiais, não crimes: a pesquisa de vitimização do FBSP estima 26,3 milhões de vítimas de golpe em um ano."]);
+
+  // Frase pronta para o texto do TCC.
+  let frase;
+  const lugar = ehBrasil ? "no Brasil" : `${PREP[uf] || "em"} ${uf}`;
+  if (!informado) {
+    frase = `O ${uf === "Distrito Federal" ? "Distrito Federal" : "estado"} não informou ao Anuário Brasileiro de Segurança Pública o número de registros de ${CRIME_NOME[crime]} em ${ano} ${chamada(u.edicao)}.`;
+  } else if (ehBrasil && crime === "eletronico" && cob) {
+    frase = `Em ${ano}, os ${cob.ufs_que_informam} estados que informaram o dado somaram ${fmt(u.registros)} registros de estelionato por meio eletrônico; ${cob.ufs_sem_dado.join(", ")} não informaram ${chamada(u.edicao)}.`;
+  } else {
+    frase = `Em ${ano}, foram registradas ${fmt(u.registros)} ocorrências de ${CRIME_NOME[crime]} ${lugar}, o que corresponde a ${n1.format(u.taxa)} registros por 100 mil habitantes ${chamada(u.edicao)}.`;
+  }
+
+  const listaVersoes = v.map((x) => `<li><span>Edição ${x.edicao} · ${edicao(x.edicao).tabela}, p. ${edicao(x.edicao).pagina}</span><span class="v">${x.situacao === "informado" ? fmt(x.registros) : "não informado"}</span></li>`).join("");
+
+  el.innerHTML = `
+    <div class="ficha-topo">
+      <p class="ficha-assunto"><b>${esc(uf)}</b> · ${ano} · ${CRIME_NOME[crime]}</p>
+      <div class="numero-linha">
+        <span class="numero ${informado ? "" : "vazio"}">${informado ? fmt(u.registros) : "não informado"}</span>
+        ${informado ? `<span class="taxa">${n1.format(u.taxa)} por 100 mil hab.</span>` : ""}
+      </div>
+      <div class="carimbos">${carimbos.join("")}</div>
+    </div>
+    <div class="ficha-corpo">
+      <section>
+        <h3>Série de ${ANOS[0]} a ${ANOS[ANOS.length - 1]}</h3>
+        <div class="grafico">${grafico(uf, crime, ano)}</div>
+        ${v.length > 1 || ANOS.some((a) => { const x = versoes(uf, a, crime); return x.length > 1 && x[0].registros !== x[x.length - 1].registros; }) ? `<p class="legenda-graf"><i></i>primeira publicação, quando a edição seguinte revisou o número</p>` : ""}
+        <ul class="versoes">${listaVersoes}</ul>
+      </section>
+      <section>
+        <h3>Antes de citar</h3>
+        <ul class="avisos">${avisos.map(([g, t]) => `<li class="aviso ${g}">${t}</li>`).join("")}</ul>
+      </section>
+    </div>
+    <div class="citar">
+      ${blocoCitar("Frase pronta", frase)}
+      ${blocoCitar("Citação no texto", chamada(u.edicao))}
+      ${blocoCitar(`Referência (${ed.tabela}, p. ${ed.pagina})`, referencia(u.edicao))}
+    </div>`;
+}
+function blocoCitar(titulo, texto) {
+  return `<div class="bloco-citar"><div class="cabeca"><h3>${esc(titulo)}</h3><button type="button" class="botao" data-copiar="${esc(texto)}">Copiar</button></div><p class="texto-citar">${esc(texto)}</p></div>`;
+}
+
+// ------------------------------------------------------------ trechos
+function montarTrechos() {
+  const contagem = {};
+  D.trechos.forEach((t) => (contagem[t.tema] = (contagem[t.tema] || 0) + 1));
+  const chips = [["todos", "Todos", D.trechos.length], ...Object.entries(TEMAS).filter(([k]) => contagem[k]).map(([k, n]) => [k, n, contagem[k]])];
+  const caixa = document.getElementById("chips");
+  caixa.innerHTML = chips.map(([k, nome, c]) => `<button type="button" class="chip" data-tema="${k}">${esc(nome)}<span class="n">${c}</span></button>`).join("");
+  caixa.addEventListener("click", (ev) => { const b = ev.target.closest("[data-tema]"); if (!b) return; estado.tema = b.dataset.tema; trechos(); });
+  document.getElementById("busca").addEventListener("input", (ev) => { estado.busca = ev.target.value; trechos(); });
+  document.getElementById("n-trechos").textContent = D.trechos.length;
+}
+function trechos() {
+  document.querySelectorAll("#chips .chip").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tema === estado.tema)));
+  const termo = estado.busca.trim().toLowerCase();
+  const lista = D.trechos.filter((t) => (estado.tema === "todos" || t.tema === estado.tema) && (!termo || (t.texto + " " + t.uso).toLowerCase().includes(termo)));
+  const caixa = document.getElementById("lista-trechos");
+  if (!lista.length) { caixa.innerHTML = `<p class="vazio-lista">Nenhum trecho com "${esc(estado.busca)}". Tente outra palavra ou volte para Todos.</p>`; return; }
+  caixa.innerHTML = lista.map((t) => {
+    const c = D.capitulos[String(t.edicao)];
+    const cit = `(${c.chamada}, ${t.edicao}, p. ${t.pagina})`;
+    const direta = `“${t.texto}” ${cit}.`;
+    return `<article class="trecho">
+      <div class="trecho-meta"><span>${esc(TEMAS[t.tema])}</span><span class="fonte">${esc(cit)}</span></div>
+      <blockquote>“${esc(t.texto)}”</blockquote>
+      <p class="uso"><b>Como pode servir:</b> ${esc(t.uso)}</p>
+      ${t.obs ? `<p class="obs">${esc(t.obs)}</p>` : ""}
+      <div class="acoes">
+        <button type="button" class="botao" data-copiar="${esc(direta)}">Copiar citação</button>
+        <button type="button" class="botao" data-copiar="${esc(referenciaCapitulo(t.edicao))}">Copiar referência</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+// ------------------------------------------------------------ cuidados
+function cuidados() {
+  const ult = ANOS[ANOS.length - 1];
+  const cob = D.cobertura.find((c) => c.ano === ult);
+  const bf = D.base_fixa.find((b) => b.ano === ult);
+  const re = D.revisoes_resumo.find((r) => r.crime === "eletronico");
+  const rt = D.revisoes_resumo.find((r) => r.crime === "total");
+  const f = D.funil.find((x) => x.ano === ult);
+  const itens = [
+    ["Grave", "c-alerta", "O estelionato eletrônico não cobre o país inteiro",
+      `${cob.ufs_sem_dado.join(", ")} não informam o eletrônico e somam ${pct(100 - cob.pct_total_coberto)} de todo o estelionato de ${ult}. Os ${fmt(cob.eletronico_informado)} casos eletrônicos parecem ser ${pct(cob.pct_eletronico_ingenuo)} do total do Brasil, mas são ${pct(cob.pct_eletronico_entre_informantes)} entre os estados que informam.`,
+      `"Nos ${cob.ufs_que_informam} estados que informam o dado…", nunca "no Brasil" sem ressalva.`],
+    ["Grave", "c-alerta", "O crescimento publicado mistura golpe novo com estado novo",
+      `De ${ult - 1} para ${ult}, o total eletrônico publicado cresceu ${pct(bf.cresc_publicado_pct, true)}. Nos ${bf.ufs_na_base} estados que informam desde 2021, sem quebra de série, cresceu ${pct(bf.cresc_base_fixa_pct, true)}. Pernambuco começou a contar no fim de 2024 e entrou com ${fmt(ultima("Pernambuco", ult, "eletronico")?.registros)} casos.`,
+      `para falar de crescimento, prefira o estelionato total, que todos os estados informam, ou diga que a base de estados mudou.`],
+    ["Grave", "c-alerta", "Há quebras de série que impedem comparar anos",
+      D.quebras.map((q) => `${q.sigla} (${q.ano})`).join(", ") + ". O Pará mudou o filtro, Pernambuco só passou a contar em dezembro de 2024, o Rio Grande do Sul começou em julho de 2023 e o Amazonas revisou 2024 em −84% sem nota.",
+      `não compare um ano antes e um depois da quebra no mesmo estado.`],
+    ["Atenção", "c-ambar", "O número muda depois de publicado",
+      `Cada ano sai em duas edições. Dos ${re.publicados_duas_vezes} números estaduais de estelionato eletrônico publicados duas vezes, ${re.revisados} mudaram na edição seguinte, ${re.revisados_10pct} em 10% ou mais. No total de estelionato, ${rt.revisados} de ${rt.publicados_duas_vezes} mudaram, só ${rt.revisados_10pct} em 10% ou mais.`,
+      `cite sempre a edição mais recente que traz o ano. A aba Consultar já faz isso.`],
+    ["Atenção", "c-ambar", "Registro não é crime",
+      `O Anuário conta boletins de ocorrência. A pesquisa de vitimização do FBSP estima 26,3 milhões de vítimas de golpe pela internet ou celular em um ano, contra ${fmt(f.boletins)} boletins de estelionato em ${ult}. Estados com mais delegacias especializadas registram mais.`,
+      `"foram registradas X ocorrências", e não "ocorreram X golpes".`],
+    ["Atenção", "c-ambar", "O funil compara volumes, não acompanha casos",
+      `Em ${ult}: ${fmt(f.boletins)} boletins, ${fmt(f.processos)} processos penais (${n1.format(f.processos_por_100_boletins)} por 100 boletins) e ${fmt(f.presos)} presos (${n1.format(f.presos_por_100_boletins)} por 100). Os processos de um ano não são os casos registrados naquele ano.`,
+      `"para cada 100 boletins, houve 2,8 processos penais no mesmo ano", e não "2,8% dos casos viraram processo".`],
+    ["Detalhe", "c-neutro", "Na edição 2025, a planilha e o PDF numeram a tabela de forma diferente",
+      `No Excel da edição 2025, a aba T19 tem o título "Tabela 15"; no PDF, é a Tabela 19, na p. 105. Na edição 2026, o ano 2024 aponta para a nota "(5)", que não existe na tabela.`,
+      `cite a tabela e a página do PDF, como nas referências desta página.`],
+    ["Detalhe", "c-neutro", "Citação direta com mais de três linhas tem outro formato",
+      `Pela ABNT (NBR 10520), a citação direta de até três linhas fica no texto, entre aspas. Acima disso, vai em parágrafo próprio, com recuo de 4 cm, letra menor e sem aspas.`,
+      `ao colar um trecho longo da aba Trechos, tire as aspas e aplique o recuo.`],
+  ];
+  document.getElementById("cuidados").innerHTML = itens.map(([g, c, t, p, faca]) =>
+    `<article class="cuidado"><span class="carimbo ${c} gravidade">${g}</span><h3>${esc(t)}</h3><p>${esc(p)}</p><p class="faca">${esc(faca)}</p></article>`).join("");
+}
+
+// ------------------------------------------------------------ tabela
+function montarTabela() {
+  const seg = document.getElementById("seg-tano");
+  seg.innerHTML = ANOS.map((a) => `<button type="button" class="seg ano" data-ano="${a}">${a}</button>`).join("");
+  seg.addEventListener("click", (ev) => { const b = ev.target.closest("[data-ano]"); if (!b) return; estado.tano = +b.dataset.ano; tabela(); });
+  document.getElementById("seg-tcrime").addEventListener("click", (ev) => { const b = ev.target.closest("[data-crime]"); if (!b) return; estado.tcrime = b.dataset.crime; tabela(); });
+  document.getElementById("tabela").addEventListener("click", (ev) => {
+    const o = ev.target.closest("[data-ordem]");
+    if (o) { const k = o.dataset.ordem; estado.ordem = [k, estado.ordem[0] === k ? -estado.ordem[1] : (k === "uf" ? 1 : -1)]; tabela(); return; }
+    const tr = ev.target.closest("tr[data-uf]");
+    if (tr) { estado.uf = tr.dataset.uf; estado.ano = estado.tano; estado.crime = estado.tcrime; guardar(); ficha(); abrir("consultar", true); }
+  });
+}
+function tabela() {
+  document.querySelectorAll("#seg-tano .seg").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.ano === estado.tano)));
+  document.querySelectorAll("#seg-tcrime .seg").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.crime === estado.tcrime)));
+  const { tano: ano, tcrime: crime } = estado;
+  let linhas = UFS.map((x) => {
+    const v = versoes(x.uf, ano, crime);
+    const u = v[v.length - 1];
+    const t = ultima(x.uf, ano, "total");
+    return {
+      uf: x.uf, u, v,
+      registros: u && u.situacao === "informado" ? u.registros : null,
+      taxa: u && u.situacao === "informado" ? u.taxa : null,
+      pctEl: crime === "eletronico" && u && u.situacao === "informado" && t ? 100 * u.registros / t.registros : null,
+      revisao: v.length > 1 && v[0].registros != null && u.registros != null && v[0].registros !== u.registros ? 100 * (u.registros / v[0].registros - 1) : null,
+    };
+  });
+  const brasil = linhas.find((l) => l.uf === "Brasil");
+  linhas = linhas.filter((l) => l.uf !== "Brasil");
+  const [k, dir] = estado.ordem;
+  linhas.sort((a, b) => {
+    if (k === "uf") return dir * a.uf.localeCompare(b.uf, "pt-BR");
+    const va = a[k], vb = b[k];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    return dir * (va - vb);
+  });
+  const cols = [["uf", "Estado", false], ["registros", "Registros", true], ["taxa", "Por 100 mil", true]];
+  if (crime === "eletronico") cols.push(["pctEl", "% do estelionato", true]);
+  cols.push(["revisao", "Revisão", true]);
+  const cab = cols.map(([c, nome, num]) => `<th class="${num ? "num" : ""}" ${estado.ordem[0] === c ? `aria-sort="${estado.ordem[1] > 0 ? "ascending" : "descending"}"` : ""}><button type="button" data-ordem="${c}">${nome}${estado.ordem[0] === c ? (estado.ordem[1] > 0 ? " ↑" : " ↓") : ""}</button></th>`).join("");
+  const linha = (l, cls) => {
+    const q = crime === "eletronico" ? quebra(l.u?.sigla) : null;
+    const celulas = {
+      uf: `${esc(l.uf)}${q ? ` <span class="carimbo c-alerta" title="${esc(q.motivo)}">quebra ${q.ano}</span>` : ""}`,
+      registros: l.registros == null ? `<span class="carimbo c-alerta">não informado</span>` : fmt(l.registros),
+      taxa: l.taxa == null ? "–" : n1.format(l.taxa),
+      pctEl: pct(l.pctEl),
+      revisao: l.revisao == null ? (l.v.length > 1 ? "igual" : "–") : `<span style="color:${Math.abs(l.revisao) >= 10 ? "var(--carimbo)" : "inherit"}">${pct(l.revisao, true)}</span>`,
+    };
+    return `<tr class="${cls}" data-uf="${esc(l.uf)}" style="cursor:pointer">${cols.map(([c, , num]) => `<td class="${num ? "num" : ""}">${celulas[c]}</td>`).join("")}</tr>`;
+  };
+  document.getElementById("tabela").innerHTML = `<thead><tr>${cab}</tr></thead><tbody>${linha(brasil, "brasil")}${linhas.map((l) => linha(l, "")).join("")}</tbody>`;
+}
+
+// ------------------------------------------------------------ início
+montarFiltros();
+montarTrechos();
+montarTabela();
+ficha();
+trechos();
+cuidados();
+tabela();
+abrir((location.hash || "").slice(1), false);
+</script>
