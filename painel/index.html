@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#ffffff">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,48 +32,53 @@
   <main class="miolo">
     <!-- ============================================================ ESTADOS -->
     <section class="painel" id="painel-estados" role="tabpanel" aria-labelledby="aba-estados">
-      <div class="cabeca-painel">
-        <div>
-          <h2>Onde o golpe é mais registrado</h2>
-          <p class="intro">Registros policiais de estelionato por estado. Passe o mouse ou toque num estado, no mapa ou no ranking, para ver os dois ao mesmo tempo. Clique para abrir a ficha.</p>
-        </div>
-      </div>
-      <div class="controles" id="controles-estados">
-        <div class="campo">
-          <span class="rotulo" id="r-e-ano">Ano</span>
-          <div class="segmentos anos" role="group" aria-labelledby="r-e-ano" data-grupo="ano"></div>
-        </div>
-        <div class="campo">
-          <span class="rotulo" id="r-e-crime">Tipo</span>
-          <div class="segmentos" role="group" aria-labelledby="r-e-crime" data-grupo="crime">
-            <button type="button" class="seg" data-valor="total">Estelionato (total)</button>
-            <button type="button" class="seg" data-valor="eletronico">Por meio eletrônico</button>
+      <div class="grapher">
+        <div class="grapher-principal">
+          <header class="grapher-topo">
+            <h2 id="g-titulo"></h2>
+            <p class="grapher-sub" id="g-sub"></p>
+          </header>
+          <div class="toolbar" id="controles-estados">
+            <div class="abas-grapher" role="tablist" aria-label="Visualização" id="abas-vis">
+              <button type="button" role="tab" data-vis="mapa">Mapa</button>
+              <button type="button" role="tab" data-vis="calor">Mapa de calor</button>
+            </div>
+            <div class="segmentos pequeno" role="group" aria-label="Tipo" data-grupo="crime">
+              <button type="button" class="seg" data-valor="total">Estelionato (total)</button>
+              <button type="button" class="seg" data-valor="eletronico">Por meio eletrônico</button>
+            </div>
+            <div class="segmentos pequeno" role="group" aria-label="Medida" data-grupo="medida">
+              <button type="button" class="seg" data-valor="taxa">Por 100 mil hab.</button>
+              <button type="button" class="seg" data-valor="registros">Número absoluto</button>
+            </div>
           </div>
-        </div>
-        <div class="campo">
-          <span class="rotulo" id="r-e-medida">Medida</span>
-          <div class="segmentos" role="group" aria-labelledby="r-e-medida" data-grupo="medida">
-            <button type="button" class="seg" data-valor="taxa">Por 100 mil hab.</button>
-            <button type="button" class="seg" data-valor="registros">Número absoluto</button>
+          <p class="alerta" id="alerta-eletronico" hidden></p>
+          <div id="vis-mapa">
+            <div class="grafico mapa-alto" id="g-mapa" role="img" aria-label="Mapa do Brasil por estado"></div>
+            <div class="legenda-bins" id="legenda-bins"></div>
           </div>
+          <div id="vis-calor" hidden>
+            <p class="sub-grafico" id="sub-calor"></p>
+            <div class="grafico" id="g-calor" style="height:720px" role="img" aria-label="Mapa de calor dos estados por ano"></div>
+          </div>
+          <div class="linha-tempo" id="linha-tempo">
+            <button type="button" class="botao-play" id="play" aria-label="Reproduzir os anos">▶</button>
+            <span class="ano-ponta" id="ano-min"></span>
+            <input type="range" id="slider-ano" aria-label="Ano">
+            <span class="ano-ponta" id="ano-max"></span>
+          </div>
+          <footer class="grapher-rodape">
+            <p><b>Fonte:</b> Fórum Brasileiro de Segurança Pública, Anuário Brasileiro de Segurança Pública (planilhas das edições 2023 a 2026).</p>
+            <p id="g-nota"><b>Nota:</b> registros policiais, não crimes.</p>
+          </footer>
         </div>
-      </div>
-      <p class="alerta" id="alerta-eletronico" hidden></p>
-      <div class="grade-estados">
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-mapa"></span></figcaption>
-          <div class="grafico mapa-alto" id="g-mapa" role="img" aria-label="Mapa do Brasil por estado"></div>
-        </figure>
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-ranking"></span></figcaption>
-          <div class="grafico" id="g-ranking" style="height:520px" role="img" aria-label="Ranking dos estados"></div>
-        </figure>
+        <aside class="grapher-lateral">
+          <p class="rotulo">Selecione um estado</p>
+          <label class="busca"><span class="sr">Buscar um estado</span><input id="busca-estado" type="search" placeholder="Buscar um estado" autocomplete="off"></label>
+          <div class="lista-estados" id="lista-estados"></div>
+        </aside>
       </div>
       <article class="ficha-estado" id="ficha-estado" aria-live="polite"></article>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico">Mapa de calor: estado × ano</span><span class="sub-grafico" id="sub-calor"></span></figcaption>
-        <div class="grafico" id="g-calor" style="height:720px" role="img" aria-label="Mapa de calor dos estados por ano"></div>
-      </figure>
     </section>
 
     <!-- ======================================================= COMPARATIVOS -->

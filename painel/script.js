@@ -141,7 +141,9 @@ function registrarMapa() {
 }
 
 // ================================================================ ESTADOS
-const est = { ano: ULTIMO, crime: "total", medida: "taxa", sel: null };
+const est = { ano: ULTIMO, crime: "total", medida: "taxa", sel: null, vis: "mapa", busca: "" };
+// Seis faixas do amarelo ao vermelho, como nos mapas do Our World in Data.
+const FAIXAS = ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#f03b20", "#bd0026"];
 
 function valoresEstados(ano = est.ano, crime = est.crime, medida = est.medida) {
   return ESTADOS.map((u) => {
@@ -155,18 +157,35 @@ const fmtMedida = (v) => (v == null ? "não informado" : est.medida === "taxa" ?
 
 function montarControlesEstados() {
   const caixa = document.getElementById("controles-estados");
-  caixa.querySelector('[data-grupo="ano"]').innerHTML = ANOS.map((a) => `<button type="button" class="seg" data-valor="${a}">${a}</button>`).join("");
   caixa.addEventListener("click", (ev) => {
     const b = ev.target.closest(".seg"); if (!b) return;
-    const g = b.parentElement.dataset.grupo;
-    est[g] = g === "ano" ? +b.dataset.valor : b.dataset.valor;
+    est[b.parentElement.dataset.grupo] = b.dataset.valor;
     desenharEstados();
   });
+  document.getElementById("abas-vis").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-vis]"); if (!b) return;
+    est.vis = b.dataset.vis; desenharEstados();
+  });
+  const sl = document.getElementById("slider-ano");
+  sl.min = ANOS[0]; sl.max = ULTIMO; sl.step = 1; sl.value = est.ano;
+  document.getElementById("ano-min").textContent = ANOS[0];
+  document.getElementById("ano-max").textContent = ULTIMO;
+  sl.addEventListener("input", () => { parar(); est.ano = +sl.value; desenharEstados(); });
+  let relogio = null;
+  const parar = () => { clearInterval(relogio); relogio = null; document.getElementById("play").textContent = "▶"; };
+  document.getElementById("play").addEventListener("click", () => {
+    if (relogio) return parar();
+    if (est.ano === ULTIMO) est.ano = ANOS[0];
+    document.getElementById("play").textContent = "❚❚";
+    desenharEstados();
+    relogio = setInterval(() => { if (est.ano >= ULTIMO) return parar(); est.ano += 1; desenharEstados(); }, 1100);
+  });
+  document.getElementById("busca-estado").addEventListener("input", (ev) => { est.busca = ev.target.value; listaEstados(); });
 }
 function marcarControlesEstados() {
-  document.querySelectorAll("#controles-estados [data-grupo]").forEach((g) => {
-    g.querySelectorAll(".seg").forEach((b) => b.setAttribute("aria-pressed", String(String(est[g.dataset.grupo]) === b.dataset.valor)));
-  });
+  document.querySelectorAll("#controles-estados .segmentos .seg").forEach((b) => b.setAttribute("aria-pressed", String(est[b.parentElement.dataset.grupo] === b.dataset.valor)));
+  document.querySelectorAll("#abas-vis [data-vis]").forEach((b) => b.setAttribute("aria-selected", String(est.vis === b.dataset.vis)));
+  document.getElementById("slider-ano").value = est.ano;
 }
 
 function tooltipEstado(sigla) {
@@ -182,74 +201,76 @@ function tooltipEstado(sigla) {
   return h;
 }
 
+// Limites das faixas: sextis dos valores do ano, arredondados a dois algarismos.
+function limites(valores) {
+  const v = valores.filter((x) => x != null).sort((a, b) => a - b);
+  const arred = (x) => { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(x)) - 1)); return Math.round(x / p) * p; };
+  const cortes = [1, 2, 3, 4, 5].map((k) => arred(v[Math.min(v.length - 1, Math.floor((k * v.length) / 6))]));
+  return [...new Set(cortes)];
+}
+
 function desenharEstados() {
   marcarControlesEstados();
   registrarMapa();
   const vals = valoresEstados();
-  const max = Math.max(...vals.map((v) => v.valor ?? 0));
   const nomeTipo = est.crime === "total" ? "Estelionato" : "Estelionato por meio eletrônico";
-  document.getElementById("tit-mapa").textContent = `${nomeTipo}, ${est.ano}, ${rotuloMedida()}`;
-  document.getElementById("tit-ranking").textContent = `Ranking dos estados, ${est.ano}`;
+  document.getElementById("g-titulo").innerHTML = `${nomeTipo} <span class="ano">${est.ano}</span>`;
+  document.getElementById("g-sub").textContent = est.medida === "taxa" ? "Registros policiais por 100 mil habitantes, por estado." : "Número de registros policiais por estado.";
+  document.getElementById("g-nota").innerHTML = est.crime === "eletronico"
+    ? `<b>Nota:</b> SP, RJ e CE não separam o estelionato eletrônico; ficam sem dado. Registros policiais, não crimes.`
+    : `<b>Nota:</b> inclui o estelionato comum e a fraude eletrônica (art. 171 do Código Penal). Registros policiais, não crimes.`;
   const alerta = document.getElementById("alerta-eletronico");
   const cob = D.cobertura.find((c) => c.ano === est.ano);
   alerta.hidden = est.crime !== "eletronico";
-  if (cob) alerta.innerHTML = `<b>${cob.ufs_sem_dado.map((s) => NOME[s]).join(", ")}</b> não informam o estelionato eletrônico em ${est.ano}. Eles somam ${pct(100 - cob.pct_total_coberto)} de todo o estelionato do país, por isso aparecem vazios.`;
+  if (cob) alerta.innerHTML = `<b>${cob.ufs_sem_dado.map((s) => NOME[s]).join(", ")}</b> não informam o estelionato eletrônico em ${est.ano} e somam ${pct(100 - cob.pct_total_coberto)} de todo o estelionato do país.`;
+  document.getElementById("vis-mapa").hidden = est.vis !== "mapa";
+  document.getElementById("vis-calor").hidden = est.vis !== "calor";
+  document.getElementById("linha-tempo").hidden = est.vis !== "mapa";
 
-  // Mapa
+  if (est.vis === "mapa") desenharMapaEstados(vals);
+  else desenharCalor();
+  listaEstados();
+  fichaEstado();
+}
+
+function desenharMapaEstados(vals) {
+  const cortes = limites(vals.map((v) => v.valor));
+  const faixas = cortes.map((c, i) => ({ gte: i === 0 ? 0 : cortes[i - 1], lt: c, color: FAIXAS[i] }));
+  faixas.push({ gte: cortes[cortes.length - 1], color: FAIXAS[cortes.length] });
+  const rot = (x) => (est.medida === "taxa" ? nf.format(x) : x >= 1000 ? nf.format(x / 1000) + " mil" : nf.format(x));
+  document.getElementById("legenda-bins").innerHTML =
+    `<div class="bin sem"><i></i><span>sem dado</span></div>` +
+    faixas.map((f, i) => `<div class="bin"><i style="background:${f.color}"></i><span>${i === 0 ? "0" : rot(f.gte)}</span></div>`).join("");
   const mapa = grafico("g-mapa");
   mapa.setOption({
     ...base(),
     tooltip: { ...base().tooltip, trigger: "item", formatter: (p) => tooltipEstado(p.name) },
-    visualMap: {
-      type: "continuous", min: 0, max, calculable: false, orient: "horizontal", left: 8, bottom: 4, itemWidth: 12, itemHeight: 160,
-      text: [fmtMedida(max), "0"], textStyle: { color: cor("--tinta-3"), fontFamily: "IBM Plex Mono, monospace", fontSize: 11 },
-      inRange: { color: rampa() }, seriesIndex: 0,
-    },
+    visualMap: { type: "piecewise", show: false, pieces: faixas, seriesIndex: 0 },
     series: [{
-      type: "map", map: "BR", roam: false, aspectScale: 0.95, layoutCenter: ["50%", "46%"], layoutSize: "96%",
-      selectedMode: "single",
-      itemStyle: { areaColor: cor("--vazio"), borderColor: cor("--folha"), borderWidth: 1 },
+      type: "map", map: "BR", roam: false, aspectScale: 0.95, layoutCenter: ["50%", "50%"], layoutSize: "100%", selectedMode: false,
+      itemStyle: { areaColor: cor("--vazio"), borderColor: cor("--folha"), borderWidth: 0.8 },
       emphasis: { label: { show: true, color: cor("--tinta"), fontWeight: 700, fontFamily: "IBM Plex Mono, monospace" }, itemStyle: { borderColor: cor("--tinta"), borderWidth: 2, areaColor: null } },
-      select: { label: { show: true, color: cor("--tinta"), fontWeight: 700 }, itemStyle: { borderColor: cor("--carimbo"), borderWidth: 2.5, areaColor: null } },
       label: { show: false },
-      data: vals.map((v) => ({ name: v.sigla, value: v.valor ?? undefined, selected: v.sigla === est.sel })),
+      data: vals.map((v) => ({ name: v.sigla, value: v.valor ?? undefined, ...(v.sigla === est.sel ? { itemStyle: { borderColor: cor("--tinta"), borderWidth: 2.5 } } : {}) })),
     }],
   }, true);
-
-  // Ranking
-  const ord = [...vals].sort((a, b) => (b.valor ?? -1) - (a.valor ?? -1));
-  const rank = grafico("g-ranking");
-  const cat = ord.map((v) => (estreito() ? v.sigla : v.uf));
-  rank.setOption({
-    ...base(),
-    grid: { left: 8, right: 70, top: 4, bottom: 4, containLabel: true },
-    tooltip: { ...base().tooltip, trigger: "item", formatter: (p) => tooltipEstado(ord[p.dataIndex].sigla) },
-    xAxis: eixoValor({ show: false, max: max * 1.02 }),
-    yAxis: eixoCategoria(cat, { inverse: true, axisLabel: { color: cor("--tinta-2"), fontSize: 11, interval: 0 } }),
-    series: [{
-      type: "bar", barWidth: "64%",
-      data: ord.map((v) => ({
-        value: v.valor ?? 0,
-        itemStyle: { color: v.sigla === est.sel ? cor("--carimbo") : cor("--serie-1"), borderRadius: [0, 4, 4, 0] },
-        label: { show: true, position: "right", color: v.valor == null ? cor("--tinta-3") : cor("--tinta"), fontFamily: "IBM Plex Mono, monospace", fontSize: 11, formatter: () => (v.valor == null ? "não informa" : fmtMedida(v.valor)) },
-      })),
-      emphasis: { itemStyle: { color: cor("--seq-5") } },
-    }],
-  }, true);
-
-  // Ligação mapa ↔ ranking
   mapa.off("mouseover"); mapa.off("mouseout"); mapa.off("click");
-  rank.off("mouseover"); rank.off("mouseout"); rank.off("click");
-  const idx = (sigla) => ord.findIndex((v) => v.sigla === sigla);
-  mapa.on("mouseover", (p) => { if (idx(p.name) >= 0) rank.dispatchAction({ type: "highlight", seriesIndex: 0, dataIndex: idx(p.name) }); });
-  mapa.on("mouseout", (p) => { if (idx(p.name) >= 0) rank.dispatchAction({ type: "downplay", seriesIndex: 0, dataIndex: idx(p.name) }); });
-  rank.on("mouseover", (p) => mapa.dispatchAction({ type: "highlight", seriesIndex: 0, name: ord[p.dataIndex].sigla }));
-  rank.on("mouseout", (p) => mapa.dispatchAction({ type: "downplay", seriesIndex: 0, name: ord[p.dataIndex].sigla }));
+  const linha = (sigla) => document.querySelector(`.estado-linha[data-sigla="${sigla}"]`);
+  mapa.on("mouseover", (p) => { const l = linha(p.name); if (l) { l.classList.add("ativo"); l.scrollIntoView({ block: "nearest" }); } });
+  mapa.on("mouseout", (p) => linha(p.name)?.classList.remove("ativo"));
   mapa.on("click", (p) => selecionarEstado(p.name));
-  rank.on("click", (p) => selecionarEstado(ord[p.dataIndex].sigla));
+}
 
-  desenharCalor();
-  fichaEstado();
+function listaEstados() {
+  const vals = valoresEstados();
+  const max = Math.max(...vals.map((v) => v.valor ?? 0));
+  const termo = est.busca.trim().toLowerCase();
+  const ord = [...vals].sort((a, b) => (b.valor ?? -1) - (a.valor ?? -1)).filter((v) => !termo || v.uf.toLowerCase().includes(termo));
+  const caixa = document.getElementById("lista-estados");
+  caixa.innerHTML = ord.map((v) => `<button type="button" class="estado-linha${v.valor == null ? " nd" : ""}${v.sigla === est.sel ? " sel" : ""}" data-sigla="${v.sigla}" style="--p:${v.valor == null ? 0 : (100 * v.valor / max).toFixed(1)}%"><span>${esc(v.uf)}</span><span class="v">${v.valor == null ? "sem dado" : fmtMedida(v.valor)}</span></button>`).join("") || `<p class="dica">Nenhum estado com "${esc(est.busca)}".</p>`;
+  caixa.onclick = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b) selecionarEstado(b.dataset.sigla); };
+  caixa.onmouseover = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b && est.vis === "mapa" && graficos["g-mapa"]) graficos["g-mapa"].dispatchAction({ type: "highlight", seriesIndex: 0, name: b.dataset.sigla }); };
+  caixa.onmouseout = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b && est.vis === "mapa" && graficos["g-mapa"]) graficos["g-mapa"].dispatchAction({ type: "downplay", seriesIndex: 0, name: b.dataset.sigla }); };
 }
 
 function selecionarEstado(sigla) {
