@@ -1,10 +1,12 @@
 # O golpe que o Brasil não sabe contar
 
-Pipeline com **dbt** e **DuckDB** que lê as planilhas de quatro edições do **Anuário Brasileiro de Segurança Pública** (2023 a 2026) e pergunta o que elas conseguem dizer sobre o estelionato eletrônico: quanto do país o número cobre, quanto ele muda de uma edição para a outra e quanto do crescimento é golpe novo e quanto é estado novo entrando na conta.
+Pipeline com **dbt** e **DuckDB** que lê as planilhas de quatro edições do **Anuário Brasileiro de Segurança Pública** (2023 a 2026) e pergunta o que elas conseguem dizer sobre o estelionato eletrônico: quanto do país o número cobre, quanto ele muda de uma edição para a outra e quanto do crescimento é golpe novo e quanto é estado novo entrando na conta. A página, **Golpe em Registro**, cruza esses números com o golpe do falso advogado (acórdãos dos Tribunais de Justiça, denúncias à OAB, CNJ) e traz citação ABNT pronta para cada número.
 
 **📊 Página:** https://luissfellipe.github.io/estelionato-digital/ · **dbt docs:** https://luissfellipe.github.io/estelionato-digital/dbt/
 
-![Página com os números do estelionato](docs/painel.png)
+A página tem sete abas: **Estados** (mapa e ranking ligados, ficha com o contorno do estado, mapa de calor estado × ano), **Comparativos** (total × eletrônico, dispersão, crescimento com base fixa, funil), **Falso advogado** (por estado, no tempo e em tamanho), **Matérias** (38 links conferidos), **Consultar e citar**, **Trechos para o TCC** e **Cuidados**.
+
+![Aba Estados: mapa, ranking e mapa de calor](docs/painel.png)
 
 > Em 2025, o estelionato eletrônico publicado cresceu **21,1%**. Nos 18 estados que informam o dado desde 2021, sem quebra de série, cresceu **11,1%**: metade da alta é Pernambuco, que só começou a contar a fraude eletrônica em dezembro de 2024.
 
@@ -21,9 +23,10 @@ data/bruto/anuario-{2023..2026}.xlsx
    │                        linhas, separa as notas de rodapé, "..." vira nulo
    ▼
 data/bronze/*.parquet ──► dbt (DuckDB) ──► data/estelionato.duckdb
-                          staging → marts      │  export/exportar.py
+                          staging → marts      │  painel/gerar.py (+ consulta/fontes.json,
+                                               │   painel/falso_advogado.json, contorno dos estados)
                                                ▼
-                                       site/data/dados.json ──► GitHub Pages
+                                       painel/dados.js ──► painel/index.html (ECharts) ──► GitHub Pages
 ```
 
 | Camada | Objeto | Descrição |
@@ -70,12 +73,19 @@ data/bronze/*.parquet ──► dbt (DuckDB) ──► data/estelionato.duckdb
 Precisa só do [uv](https://docs.astral.sh/uv/).
 
 ```bash
-make pipeline   # baixa, extrai, roda o dbt (seeds, 11 modelos e 19 testes) e exporta o JSON
-make docs       # documentação do dbt em site/dbt/
-make site       # página em http://localhost:8003
+make pipeline   # baixa, extrai, roda o dbt (2 seeds, 11 modelos e 19 testes) e gera painel/dados.js
+make docs       # documentação do dbt em painel/dbt/
+make site       # página em http://localhost:8003 (ou dois cliques em painel/index.html)
 ```
 
-O GitHub Actions roda o mesmo pipeline a cada push e publica `site/` no GitHub Pages.
+`painel/dados.js` e `painel/dbt/` vão versionados. O GitHub Actions só publica a pasta `painel/`, então o deploy não depende de o site do FBSP responder ao servidor do GitHub.
+
+## Falso advogado: as fontes fora do Anuário
+
+O Anuário não separa o golpe do falso advogado. A aba dele usa `painel/falso_advogado.json`, montado à mão com fonte e data em cada item:
+- **Vieira (2026)**, Revista de Direito da ADVOCEF n. 41, Tabelas 1 e 2: acórdãos por tribunal e por região, 2023–2025. Algumas linhas não fecham no próprio artigo (TJBA, TJPB, TJMA, Nordeste, Sul); a página mostra os números como impressos e explica a diferença.
+- **Denúncias às seccionais da OAB** (SP, PR, RJ, ES, MG), cada uma num período diferente, por isso sem ranking entre estados.
+- **Ouvidoria do CNJ**, **ConfirmADV** (OAB Nacional) e 38 matérias abertas e conferidas em 23/10/2026.
 
 ## Limites
 

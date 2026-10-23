@@ -6,6 +6,3 @@ dbt_estelionato/logs/
 dbt_estelionato/dbt_packages/
 dbt_estelionato/.user.yml
 logs/
-# Gerados pelo pipeline (no Actions, a cada publicação).
-site/data/
-site/dbt/

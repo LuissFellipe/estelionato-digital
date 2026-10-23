@@ -1,10 +1,12 @@
 name: Publicar painel
 
-# O Anuário sai uma vez por ano, em julho. O workflow roda a cada push e sob
-# demanda; para pegar uma edição nova basta acrescentá-la em ingest/fontes.py.
+# A página vai pronta no repositório: painel/dados.js é gerado localmente por
+# `make pipeline` e a documentação do dbt por `make docs`. O workflow só
+# publica a pasta, sem depender de o site do FBSP responder ao runner.
 on:
   push:
     branches: [master]
+    paths: ["painel/**", ".github/workflows/publicar.yml"]
   workflow_dispatch:
 
 permissions:
@@ -24,15 +26,9 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --frozen
-      # O pipeline inteiro, do download ao JSON: são quatro planilhas e o dbt
-      # build leva menos de um segundo.
-      - run: make pipeline
-      - run: make docs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: painel
       - id: deploy
         uses: actions/deploy-pages@v4
