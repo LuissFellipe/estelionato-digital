@@ -127,7 +127,8 @@ const eixoCategoria = (dados, extra = {}) => ({
   axisLabel: { color: cor("--tinta-2"), fontSize: 12 },
   ...extra,
 });
-const rampa = () => [cor("--seq-1"), cor("--seq-2"), cor("--seq-3"), cor("--seq-4"), cor("--seq-5")];
+// Rampa padrão de mapa de calor (amarelo → vermelho), igual nos dois temas: valor alto é sempre o mais escuro e vermelho.
+const rampa = () => ["#ffffcc", "#fed976", "#fd8d3c", "#e31a1c", "#800026"];
 const estreito = () => window.innerWidth < 640;
 
 let mapaRegistrado = false;
@@ -333,10 +334,9 @@ function desenharCalor() {
     dados.push({ value: [x, y, v] });
   }));
   // Texto claro nas células escuras: a rampa escurece com o valor no tema claro e clareia no escuro.
-  const escuroNoAlto = !temaEscuro();
   // Célula clara recebe tinta escura fixa; célula escura, branco. No tema escuro a rampa se inverte.
-  dados.forEach((d) => { const alto = d.value[2] > max * 0.55; d.label = { color: d.value[2] < 0 ? cor("--tinta-3") : (alto === escuroNoAlto ? "#ffffff" : "#14202b") }; });
-  document.getElementById("sub-calor").textContent = `${est.crime === "total" ? "Estelionato total" : "Estelionato eletrônico"}, ${rotuloMedida().replace(/\.$/, "")}. Estados ordenados pelo valor de ${ULTIMO}. Cinza: não informado.`;
+  dados.forEach((d) => { const alto = d.value[2] > max * 0.55; d.label = { color: d.value[2] < 0 ? cor("--tinta-3") : (alto ? "#ffffff" : "#14202b") }; });
+  document.getElementById("sub-calor").textContent = `${est.crime === "total" ? "Estelionato total" : "Estelionato eletrônico"}, ${rotuloMedida().replace(/\.$/, "")}. Estados ordenados pelo valor de ${ULTIMO}. Cinza: não informado. Quanto mais vermelho, maior o valor.`;
   const g = grafico("g-calor");
   g.setOption({
     ...base(),
@@ -579,8 +579,7 @@ function desenharFalso() {
   // Região × ano
   const regs = V.regioes;
   const dadosR = [];
-  const escR = !temaEscuro();
-  regs.forEach((r, y) => ["a2023", "a2024", "a2025"].forEach((k, x) => dadosR.push({ value: [x, y, r[k]], label: { color: (r[k] > 100) === escR ? "#ffffff" : "#14202b" } })));
+  regs.forEach((r, y) => ["a2023", "a2024", "a2025"].forEach((k, x) => dadosR.push({ value: [x, y, r[k]], label: { color: r[k] > 100 ? "#ffffff" : "#14202b" } })));
   const rg = grafico("g-regiao");
   rg.setOption({
     ...base(),
