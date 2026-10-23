@@ -1,0 +1,10 @@
+name: dbt_estelionato
+version: "1.0.0"
+profile: dbt_estelionato
+
+models:
+  dbt_estelionato:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

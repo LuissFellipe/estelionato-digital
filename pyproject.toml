@@ -1,0 +1,11 @@
+[project]
+name = "estelionato-digital"
+version = "0.1.0"
+description = "Estelionato e fraude eletrônica nos Anuários Brasileiros de Segurança Pública"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "requests>=2.32",
+    "openpyxl>=3.1",
+    "duckdb==1.5.6",
+    "dbt-duckdb>=1.9",
+]

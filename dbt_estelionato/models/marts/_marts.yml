@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: fct_estelionato
+    description: Registros e taxa por UF, ano e crime, na versão da edição mais recente.
+    columns:
+      - name: crime
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["total", "eletronico"]
+      - name: situacao
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["informado", "nao_informado"]
+      - name: registros
+        description: Nulo quando o estado não informou ("..." na planilha).
+  - name: fct_revisoes
+    description: Os anos publicados em duas edições, com a versão original e a revisada.
+    columns:
+      - name: tipo
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["igual", "revisado", "passou a informar", "deixou de informar", "nunca informado"]
+  - name: fct_cobertura_eletronico
+    description: Por ano, quantos estados informam o estelionato eletrônico e que parte do total eles somam.
+    columns:
+      - name: ano
+        data_tests: [unique, not_null]
+  - name: fct_participacao_eletronico
+    description: Parte do estelionato de cada estado registrada como eletrônica.
+  - name: fct_serie_nacional
+    description: Registros de estelionato no Brasil desde 2018, primeira e última versão.
+    columns:
+      - name: ano
+        data_tests: [unique, not_null]
+  - name: fct_funil
+    description: Boletins, processos penais e presos por estelionato, 2024 e 2025.
+    columns:
+      - name: ano
+        data_tests: [unique, not_null]
+  - name: fct_eletronico_base_fixa
+    description: Estelionato eletrônico só dos estados com série completa e sem quebra, ao lado do total publicado.
+    columns:
+      - name: ano
+        data_tests: [unique, not_null]
+
+seeds:
+  - name: quebras_de_serie
+    description: Quebras na série do estelionato eletrônico, documentadas em nota ou achadas nas revisões.
+  - name: ufs
+    description: Nome, sigla e região das 27 UFs, para casar com o rótulo da planilha.

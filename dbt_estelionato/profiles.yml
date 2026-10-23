@@ -1,0 +1,7 @@
+dbt_estelionato:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('PROJETO') }}/data/estelionato.duckdb"
+      threads: 4

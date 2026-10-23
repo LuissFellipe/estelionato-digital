@@ -1,0 +1,16 @@
+version: 2
+
+# A bronze é lida direto dos Parquet que ingest/extrair.py grava.
+sources:
+  - name: bronze
+    meta:
+      external_location: "{{ env_var('PROJETO') }}/data/bronze/{name}.parquet"
+    tables:
+      - name: estelionato_uf
+        description: Um valor por edição, UF, ano, crime e medida, como está na tabela do Anuário.
+      - name: notas
+        description: Texto das notas de rodapé da tabela de estelionato, por edição.
+      - name: serie_nacional
+        description: Registros de estelionato no Brasil desde 2018, do painel de cada edição.
+      - name: funil
+        description: Boletins, processos penais e presos por estelionato (quadro da edição 2026).
