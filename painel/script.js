@@ -22,6 +22,8 @@ const PREP = {
   "Rio de Janeiro": "no", "Rio Grande do Norte": "no", "Rio Grande do Sul": "no", "Tocantins": "no",
 };
 const cor = (nome) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+// Tema escuro: a escolha explícita (data-theme) vale mais que a do sistema.
+const temaEscuro = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches; };
 
 // ---------------------------------------------------------------- índices
 const ANOS = [...new Set(D.registros.map((r) => r.ano))].sort();
@@ -313,7 +315,7 @@ function desenharCalor() {
     dados.push({ value: [x, y, v] });
   }));
   // Texto claro nas células escuras: a rampa escurece com o valor no tema claro e clareia no escuro.
-  const escuroNoAlto = !window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const escuroNoAlto = !temaEscuro();
   // Célula clara recebe tinta escura fixa; célula escura, branco. No tema escuro a rampa se inverte.
   dados.forEach((d) => { const alto = d.value[2] > max * 0.55; d.label = { color: d.value[2] < 0 ? cor("--tinta-3") : (alto === escuroNoAlto ? "#ffffff" : "#14202b") }; });
   document.getElementById("sub-calor").textContent = `${est.crime === "total" ? "Estelionato total" : "Estelionato eletrônico"}, ${rotuloMedida().replace(/\.$/, "")}. Estados ordenados pelo valor de ${ULTIMO}. Cinza: não informado.`;
@@ -559,7 +561,7 @@ function desenharFalso() {
   // Região × ano
   const regs = V.regioes;
   const dadosR = [];
-  const escR = !window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const escR = !temaEscuro();
   regs.forEach((r, y) => ["a2023", "a2024", "a2025"].forEach((k, x) => dadosR.push({ value: [x, y, r[k]], label: { color: (r[k] > 100) === escR ? "#ffffff" : "#14202b" } })));
   const rg = grafico("g-regiao");
   rg.setOption({
@@ -794,6 +796,7 @@ function redesenharTudo() {
   desenharAba(abaAtual);
 }
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redesenharTudo);
+new MutationObserver(redesenharTudo).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 let espera;
 window.addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(() => desenharAba(abaAtual), 150); });
 
