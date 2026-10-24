@@ -73,11 +73,6 @@ h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
 .seg button:active { opacity: .8; }
 
 .mapa-caixa { position: relative; }
-.pequenos { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: repeat(2, 62px); gap: 4px; }
-.peq { appearance: none; border: 0; border-radius: 6px; min-height: 44px; display: grid; place-content: center; gap: 1px; cursor: pointer; background: var(--vazio); color: var(--tinta); font: 400 11px var(--mono); }
-.peq b { font: 800 12px var(--texto); }
-.peq.sel, .peq:hover { outline: 2px solid var(--tinta); outline-offset: 1px; }
-.peq.nd { background: repeating-linear-gradient(45deg, var(--vazio) 0 3px, var(--card) 3px 6px); }
 
 .legenda { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 2px; margin-top: 4px; }
 .legenda .bin { display: grid; gap: 3px; font: 400 11px var(--mono); color: var(--tinta-2); }
@@ -113,8 +108,7 @@ h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
 @media (max-width: 640px) {
   h2 { font-size: 20px; }
   .card { padding: 12px 12px 8px; }
-  .pequenos { position: static; transform: none; grid-template-columns: repeat(4, 1fr); margin-top: 6px; }
-  .legenda .bin i { width: 34px; }
+    .legenda .bin i { width: 34px; }
   .lista { grid-template-columns: minmax(0, 1fr); }
   #c-mapa { height: 360px !important; }
   #c-linhas { height: 400px !important; }

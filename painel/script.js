@@ -184,7 +184,7 @@ function desenharMapa() {
     tooltip: { ...base().tooltip, trigger: "item", formatter: (p) => dicaEstado(p.name) },
     visualMap: faixas ? { type: "piecewise", show: false, pieces: faixas, seriesIndex: 0 } : undefined,
     geo: {
-      map: "BR", roam: false, aspectScale: 0.95, layoutCenter: [pequeno ? "50%" : "42%", "50%"], layoutSize: pequeno ? "100%" : "104%", selectedMode: false,
+      map: "BR", roam: false, aspectScale: 0.95, layoutCenter: ["50%", "50%"], layoutSize: pequeno ? "100%" : "104%", selectedMode: false,
       itemStyle: { areaColor: cor("--vazio"), borderColor: cor("--card"), borderWidth: 0.8 },
       emphasis: { label: { show: !circulos }, itemStyle: { borderColor: tinta, borderWidth: 2, areaColor: circulos ? cor("--vazio") : null } },
       label: {
@@ -215,15 +215,6 @@ function desenharMapa() {
   m.off("click");
   m.on("click", (p) => p.name && NOME[p.name] && alternar(p.name));
 
-  const caixa = document.getElementById("pequenos");
-  caixa.innerHTML = PEQUENOS.map((s) => {
-    const x = vals.find((y) => y.sigla === s), c = corDe(x.v);
-    const estilo = circulos ? "" : c ? `background:${c};color:${escuro(x.v) ? "#fff" : "#1d1d1d"}` : "";
-    return `<button type="button" class="peq${x.v == null ? " nd" : ""}${est.sel.includes(s) ? " sel" : ""}" data-sigla="${s}" style="${estilo}"><b>${s}</b><span>${curto(x.v)}</span></button>`;
-  }).join("");
-  caixa.onclick = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b) alternar(b.dataset.sigla); };
-  caixa.onmouseover = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b) mostrarDica(b, dicaEstado(b.dataset.sigla)); };
-  caixa.onmouseout = () => { dica.hidden = true; };
 }
 
 function desenharRanking() {
