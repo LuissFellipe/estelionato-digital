@@ -3,199 +3,154 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Golpe em Registro</title>
-  <meta name="description" content="Estelionato, fraude eletrônica e o golpe do falso advogado nos dados do Anuário Brasileiro de Segurança Pública e em fontes do Judiciário e da OAB.">
-  <meta name="theme-color" content="#ffffff">
+  <title>Estelionato no Brasil</title>
+  <meta name="description" content="Estelionato, estelionato eletrônico e o golpe do falso advogado em gráficos: Anuário Brasileiro de Segurança Pública, Tribunais de Justiça e OAB.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="painel-pagina">
-  <nav class="nav-topo" aria-label="Seções">
-    <div class="miolo nav-interna">
-      <strong class="marca">Golpe em Registro</strong>
-      <a href="#panorama">Panorama</a><a href="#estados">Estados</a><a href="#comparativos">Total × eletrônico</a><a href="#falso-advogado">Falso advogado</a><a href="#materias">Matérias</a>
+<body>
+  <header class="topo">
+    <div class="miolo topo-linha">
+      <span class="marca">Estelionato no Brasil</span>
+      <nav aria-label="Seções">
+        <a href="#estados">Estados</a>
+        <a href="#eletronico">Total × eletrônico</a>
+        <a href="#falso">Falso advogado</a>
+        <a href="#materias">Matérias</a>
+      </nav>
     </div>
-  </nav>
+  </header>
 
   <main class="miolo">
-    <header class="cabecalho">
-      <h1>Estelionato e golpe digital no Brasil</h1>
-      <p>Registros policiais por estado (Anuário Brasileiro de Segurança Pública, 2018–2025) e o golpe do falso advogado. Dados de <span id="gerado"></span>. <a href="dbt/">Catálogo do dbt</a> · <a href="https://github.com/LuissFellipe/estelionato-digital">Código</a></p>
-    </header>
-
-    <section id="panorama">
-      <h2>Panorama</h2>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico" id="tit-serie"></span><span class="sub-grafico">Registros de estelionato no Brasil (golpe digital e tradicional somados). Última versão publicada de cada ano.</span></figcaption>
-        <div class="grafico" id="g-serie" style="height:300px" role="img" aria-label="Série nacional de estelionato"></div>
-        <details class="calc"><summary>Como foi calculado</summary><p>Variação = (registros de <span id="calc-ult"></span> ÷ registros de <span id="calc-pri"></span> − 1) × 100. Média anual (taxa composta) = (último ÷ primeiro)<sup>1/anos</sup> − 1: é o crescimento constante por ano que levaria do primeiro ao último valor. Cada ano usa a versão mais recente publicada pelo Anuário, porque os números são revisados na edição seguinte.</p></details>
-      </figure>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico" id="tit-funil"></span><span class="sub-grafico">Boletins de ocorrência, processos penais e presos por estelionato no Brasil. Fonte: Anuário 2026, Quadro 04 (p. 125).</span></figcaption>
-        <div class="tabela-dados" id="funil"></div>
-        <details class="calc"><summary>Como foi calculado</summary><p>Por 100 boletins = etapa ÷ boletins × 100. Processos e presos de um ano não são os casos registrados naquele ano: a razão compara volumes, não acompanha cada caso.</p></details>
-      </figure>
-    </section>
-
+    <!-- ============================== ESTADOS ============================== -->
     <section id="estados">
-      <h2>Estados</h2>
-      <div id="fig-estados">
-<div class="grapher">
-        <div class="grapher-principal">
-          <header class="grapher-topo">
-            <h2 id="g-titulo"></h2>
-            <p class="grapher-sub" id="g-sub"></p>
-            <p class="manchete" id="g-manchete"></p>
-          </header>
-          <div class="toolbar" id="controles-estados">
-            <div class="abas-grapher" role="tablist" aria-label="Visualização" id="abas-vis">
-              <button type="button" role="tab" data-vis="mapa">Mapa</button>
-              <button type="button" role="tab" data-vis="calor">Mapa de calor</button>
-            </div>
-            <div class="segmentos pequeno" role="group" aria-label="Tipo" data-grupo="crime">
-              <button type="button" class="seg" data-valor="total">Estelionato (total)</button>
-              <button type="button" class="seg" data-valor="eletronico">Por meio eletrônico</button>
-            </div>
-            <div class="segmentos pequeno" role="group" aria-label="Medida" data-grupo="medida">
-              <button type="button" class="seg" data-valor="taxa">Por 100 mil hab.</button>
-              <button type="button" class="seg" data-valor="registros">Número absoluto</button>
-            </div>
-            <div class="segmentos pequeno" role="group" aria-label="Escala de cor" data-grupo="escala" id="grupo-escala">
-              <button type="button" class="seg" data-valor="faixas">Faixas</button>
-              <button type="button" class="seg" data-valor="mediana">Comparado à mediana</button>
-            </div>
+      <div class="secao-topo">
+        <h2>Estelionato por estado</h2>
+        <div class="controles">
+          <div class="seg" data-grupo="crime" role="group" aria-label="Tipo">
+            <button type="button" data-valor="total">Total</button>
+            <button type="button" data-valor="eletronico">Eletrônico</button>
           </div>
-          <p class="alerta" id="alerta-eletronico" hidden></p>
-          <div id="vis-mapa">
-            <div class="mapa-caixa">
-              <div class="grafico mapa-alto" id="g-mapa" role="img" aria-label="Mapa do Brasil por estado"></div>
-              <div class="quadro-pequenos" id="quadro-pequenos" role="group" aria-label="Estados pequenos"></div>
-            </div>
-            <div class="legenda-bins" id="legenda-bins"></div>
-          </div>
-          <div id="vis-calor" hidden>
-            <p class="sub-grafico" id="sub-calor"></p>
-            <div class="grafico" id="g-calor" style="height:720px" role="img" aria-label="Mapa de calor dos estados por ano"></div>
-          </div>
-          <div class="linha-tempo" id="linha-tempo">
-            <button type="button" class="botao-play" id="play" aria-label="Reproduzir os anos">▶</button>
-            <span class="ano-ponta" id="ano-min"></span>
-            <input type="range" id="slider-ano" aria-label="Ano">
-            <span class="ano-ponta" id="ano-max"></span>
-          </div>
-          <footer class="grapher-rodape">
-            <p><b>Fonte:</b> Fórum Brasileiro de Segurança Pública, Anuário Brasileiro de Segurança Pública (planilhas das edições 2023 a 2026).</p>
-            <p id="g-nota"><b>Nota:</b> registros policiais, não crimes.</p>
-            <details class="calc"><summary>Como foi calculado</summary><p><b>Taxa</b> = registros ÷ população × 100 mil (a do próprio Anuário, com população do IBGE). Serve para comparar estados de tamanhos diferentes. <b>Faixas</b>: os valores de todos os anos juntos divididos em seis grupos de tamanho igual (sextis), arredondados; assim a mesma cor vale o mesmo número em qualquer ano. <b>Comparado à mediana</b>: (taxa do estado ÷ mediana dos estados no ano − 1) × 100. Usa a mediana, e não a média, porque DF e SP puxam a média para cima; azul fica abaixo, vermelho acima, cinza dentro de ±15%. <b>Número absoluto</b>: círculo com área proporcional aos registros. Colorir o mapa com número absoluto destacaria só os estados populosos.</p></details>
-          </footer>
-        </div>
-        <aside class="grapher-lateral">
-          <p class="rotulo">Selecione um estado</p>
-          <label class="busca"><span class="sr">Buscar um estado</span><input id="busca-estado" type="search" placeholder="Buscar um estado" autocomplete="off"></label>
-          <div class="lista-estados" id="lista-estados"></div>
-        </aside>
-      </div>
-      <article class="ficha-estado" id="ficha-estado" aria-live="polite"></article>
-      </div>
-
-    </section>
-
-    <section id="comparativos">
-      <h2>Estelionato total × eletrônico</h2>
-      <div class="destaques" id="destaques-comp"></div>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico" id="tit-empilhado"></span><span class="sub-grafico">Barras ordenadas pela parte eletrônica. SP, RJ e CE não separam o eletrônico e aparecem só com o total.</span></figcaption>
-        <div class="grafico" id="g-empilhado" style="height:760px" role="img" aria-label="Estelionato total e eletrônico por estado"></div>
-        <details class="calc"><summary>Como foi calculado</summary><p>Parte eletrônica = estelionato eletrônico ÷ estelionato total do estado × 100, com as taxas por 100 mil do Anuário. SP, RJ e CE não separam o eletrônico: a barra mostra só o total, sem dividir, porque “não informado” não é zero.</p></details>
-      </figure>
-      <div class="dupla">
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-cresc"></span><span class="sub-grafico" id="sub-cresc"></span></figcaption>
-          <div class="grafico" id="g-cresc" style="height:440px" role="img" aria-label="Crescimento anual do estelionato eletrônico"></div>
-        <details class="calc"><summary>Como foi calculado</summary><p>Variação = (soma do ano ÷ soma do ano anterior − 1) × 100. <b>Publicado</b>: soma de todos os estados que informaram em cada ano, então um estado que começa a informar (como PE em 2024) entra como se fosse crescimento. <b>Mesma base</b>: soma só dos estados presentes em todos os anos e sem quebra de série; mede o crescimento sem esse efeito.</p></details>
-        </figure>
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-dispersao"></span><span class="sub-grafico">Cada bolha é um estado; a área é o número de registros.</span></figcaption>
-          <div class="grafico" id="g-dispersao" style="height:440px" role="img" aria-label="Dispersão entre taxa de estelionato e parte eletrônica"></div>
-        <details class="calc"><summary>Como foi calculado</summary><p><b>r</b> é o coeficiente de correlação de Pearson entre a taxa de estelionato e a parte eletrônica nos estados que informam. Vai de −1 a 1: perto de 0, as duas medidas não andam juntas; acima de 0,6 (ou abaixo de −0,6), andam. Correlação não é causa. Valor atual: <span id="calc-r"></span>.</p></details>
-        </figure>
-      </div>
-
-    </section>
-
-    <section id="falso-advogado">
-      <h2>Golpe do falso advogado</h2>
-      <p class="aviso-texto">O Anuário não separa o falso advogado dos demais estelionatos. Estes números vêm de fontes distintas (acórdãos dos TJs, OAB, CNJ), cada uma com período e critério próprios: não os compare entre si.</p>
-      <div class="destaques" id="destaques-falso"></div>
-
-      <h4 class="sub-sub">Distribuição por estado</h4>
-      <div class="dupla">
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-mapa-falso"></span><span class="sub-grafico">Acórdãos sobre o golpe, 2023–2025. Só os 10 tribunais com mais acórdãos; os outros 17 ficam em cinza.</span></figcaption>
-          <div class="grafico mapa-medio" id="g-mapa-falso" role="img" aria-label="Mapa dos acórdãos por tribunal"></div>
-          <details class="calc"><summary>Como foi calculado</summary><p>Vieira (2026), Tabela 1: total de acórdãos de cada tribunal entre 2023 e 2025. Número absoluto, não taxa: mostra onde o golpe chegou à Justiça, e não o risco por habitante.</p></details>
-        </figure>
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-tj"></span><span class="sub-grafico">Fonte: Vieira (2026, Tabela 1, p. 546).</span></figcaption>
-          <div class="legenda-html" id="leg-tj"></div>
-          <div class="grafico" id="g-tj" style="height:420px" role="img" aria-label="Acórdãos por tribunal e ano"></div>
-          <details class="calc"><summary>Como foi calculado</summary><p>Vieira (2026), Tabela 1. Onde a soma dos três anos difere do total impresso no artigo, o rótulo mostra o total impresso e a dica avisa a diferença.</p></details>
-        </figure>
-      </div>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico" id="tit-disp-falso"></span><span class="sub-grafico">Cada ponto é um estado entre os 10 tribunais do levantamento. Eixo horizontal: estelionato por 100 mil hab. em 2025 (Anuário). Eixo vertical: acórdãos sobre o falso advogado por milhão de habitantes, 2023–2025 (Vieira).</span></figcaption>
-        <div class="controles compacto">
-          <div class="segmentos" role="group" aria-label="Tipo de estelionato no eixo horizontal" id="seg-disp-falso">
-            <button type="button" class="seg" data-valor="total">Estelionato total</button>
-            <button type="button" class="seg" data-valor="eletronico">Eletrônico</button>
+          <div class="seg" data-grupo="medida" role="group" aria-label="Medida">
+            <button type="button" data-valor="taxa">Por 100 mil hab.</button>
+            <button type="button" data-valor="registros">Registros</button>
           </div>
         </div>
-        <div class="grafico" id="g-disp-falso" style="height:440px" role="img" aria-label="Dispersão entre estelionato e acórdãos do falso advogado"></div>
-          <details class="calc"><summary>Como foi calculado</summary><p>Eixo vertical = acórdãos 2023–2025 ÷ população do estado × 1 milhão (população implícita na taxa do Anuário de 2025). Por milhão, e não por 100 mil, porque os números são pequenos. <b>r</b> = correlação de Pearson entre os dois eixos; com só 10 pontos, é uma indicação fraca. Valor atual: <span id="calc-r-falso"></span>.</p></details>
-      </figure>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico">Denúncias às seccionais da OAB: cada uma conta num período diferente</span><span class="sub-grafico">O período está ao lado de cada barra. Não é ranking entre estados.</span></figcaption>
-        <div class="grafico" id="g-oab" style="height:300px" role="img" aria-label="Denúncias às seccionais da OAB"></div>
-          <details class="calc"><summary>Como foi calculado</summary><p>Números como divulgados por cada seccional, cada um com seu período. Como as bases são diferentes, as barras mostram ordem de grandeza, não comparação entre estados.</p></details>
-      </figure>
+      </div>
+      <p class="nota" id="nota-estados"></p>
 
-      <h4 class="sub-sub">Evolução no tempo</h4>
-      <div class="dupla">
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-indice"></span><span class="sub-grafico">Índice 2023 = 100: quanto cada medida cresceu desde 2023.</span></figcaption>
-          <div class="legenda-html" id="leg-indice"></div>
-          <div class="grafico" id="g-indice" style="height:380px" role="img" aria-label="Índice de crescimento"></div>
-          <details class="calc"><summary>Como foi calculado</summary><p>Índice = valor do ano ÷ valor de 2023 × 100. Põe séries de tamanhos muito diferentes na mesma base para comparar o ritmo de crescimento; não compara os níveis. O eletrônico usa a mesma base de estados, para não contar como crescimento os estados que começaram a informar.</p></details>
-        </figure>
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-regiao"></span><span class="sub-grafico">Acórdãos por região e ano. Fonte: Vieira (2026, Tabela 2, p. 547).</span></figcaption>
-          <div class="grafico" id="g-regiao" style="height:380px" role="img" aria-label="Mapa de calor dos acórdãos por região e ano"></div>
-          <details class="calc"><summary>Como foi calculado</summary><p>Vieira (2026), Tabela 2. As somas por ano das regiões não batem com o total do artigo (veja a nota abaixo).</p></details>
-        </figure>
+      <div class="grade g-mapa">
+        <article class="card">
+          <h3 id="tit-mapa"></h3>
+          <div class="mapa-caixa">
+            <div class="grafico" id="c-mapa" style="height:560px"></div>
+            <div class="pequenos" id="pequenos"></div>
+          </div>
+          <div class="legenda" id="legenda-mapa"></div>
+          <div class="tempo">
+            <button type="button" class="play" id="play" aria-label="Reproduzir os anos">▶</button>
+            <input type="range" id="ano" aria-label="Ano">
+            <output id="ano-rot"></output>
+          </div>
+        </article>
+        <article class="card">
+          <h3 id="tit-ranking"></h3>
+          <div class="grafico" id="c-ranking" style="height:660px"></div>
+        </article>
       </div>
 
-      <h4 class="sub-sub">Dimensão do problema</h4>
-      <div class="dupla">
-        <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Do registro ao tribunal, em São Paulo</span><span class="sub-grafico">Escala de quadradinhos: cada quadrado é uma fração fixa do total. Mostra quanto cada contagem é menor que a anterior.</span></figcaption>
-          <div id="escala-sp"></div>
-        </figure>
-        <div class="nota-metodo" id="nota-vieira"></div>
+      <div class="grade g-2">
+        <article class="card">
+          <h3 id="tit-linhas"></h3>
+          <p class="nota">Clique nos estados do mapa ou do ranking para adicionar ou remover.</p>
+          <div class="grafico" id="c-linhas" style="height:620px"></div>
+        </article>
+        <article class="card">
+          <h3 id="tit-calor"></h3>
+          <div class="grafico" id="c-calor" style="height:680px"></div>
+        </article>
       </div>
     </section>
 
+    <!-- ========================= TOTAL × ELETRÔNICO ========================= -->
+    <section id="eletronico">
+      <div class="secao-topo"><h2>Estelionato total × eletrônico</h2></div>
+
+      <div class="grade g-2">
+        <article class="card">
+          <h3>Estelionato no Brasil, 2018–2025</h3>
+          <div class="grafico" id="c-serie" style="height:340px"></div>
+        </article>
+        <article class="card">
+          <h3>Estelionato eletrônico: total publicado × mesmos estados</h3>
+          <p class="nota" id="nota-base"></p>
+          <div class="grafico" id="c-base" style="height:320px"></div>
+        </article>
+      </div>
+
+      <div class="grade g-2">
+        <article class="card">
+          <h3 id="tit-empilhado"></h3>
+          <p class="nota">SP, RJ e CE não separam o eletrônico e aparecem só com o total.</p>
+          <div class="grafico" id="c-empilhado" style="height:720px"></div>
+        </article>
+        <article class="card">
+          <h3 id="tit-disp"></h3>
+          <p class="nota">Cada bolha é um estado; a área é o número de registros.</p>
+          <div class="grafico" id="c-disp" style="height:720px"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================ FALSO ADVOGADO ============================ -->
+    <section id="falso">
+      <div class="secao-topo"><h2>Golpe do falso advogado</h2></div>
+      <p class="nota">O Anuário não separa o falso advogado. Acórdãos: Vieira (2026), os 10 Tribunais de Justiça com mais casos.</p>
+
+      <div class="grade g-2">
+        <article class="card">
+          <h3>Acórdãos sobre o golpe por tribunal, 2023–2025</h3>
+          <div class="grafico" id="c-mapa-falso" style="height:440px"></div>
+        </article>
+        <article class="card">
+          <h3>Acórdãos por tribunal e ano</h3>
+          <div class="grafico" id="c-tj" style="height:440px"></div>
+        </article>
+      </div>
+
+      <div class="grade g-3">
+        <article class="card">
+          <h3>Acórdãos por ano</h3>
+          <div class="grafico" id="c-anual" style="height:300px"></div>
+        </article>
+        <article class="card">
+          <h3>Acórdãos por região e ano</h3>
+          <div class="grafico" id="c-regiao" style="height:300px"></div>
+        </article>
+        <article class="card">
+          <h3>Denúncias às seccionais da OAB</h3>
+          <p class="nota">Cada seccional conta num período diferente (indicado na dica).</p>
+          <div class="grafico" id="c-oab" style="height:270px"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =============================== MATÉRIAS =============================== -->
     <section id="materias">
-      <h2>Matérias sobre o falso advogado (<span id="n-materias"></span>)</h2>
-      <div class="barra-filtros">
-        <div class="segmentos" id="chips-materias" role="group" aria-label="Filtrar por assunto"></div>
-        <label class="busca"><span class="sr">Buscar nas matérias</span><input id="busca-materias" type="search" placeholder="Buscar nas matérias" enterkeyhint="search" autocomplete="off"></label>
+      <div class="secao-topo">
+        <h2>Matérias sobre o falso advogado <span class="n" id="n-materias"></span></h2>
+        <input type="search" id="busca" placeholder="Buscar" aria-label="Buscar nas matérias" enterkeyhint="search" autocomplete="off">
       </div>
-      <div id="lista-materias"></div>
+      <div class="chips" id="chips"></div>
+      <ul class="lista" id="lista"></ul>
     </section>
 
-    <footer class="rodape"><p>Registros policiais, não crimes. Projeto independente, sem vínculo com o Fórum Brasileiro de Segurança Pública.</p></footer>
+    <footer class="rodape">
+      Fonte: Fórum Brasileiro de Segurança Pública, Anuário Brasileiro de Segurança Pública (edições 2023–2026) · Vieira (2026) · seccionais da OAB.
+      Dados de <span id="gerado"></span> · <a href="https://github.com/LuissFellipe/estelionato-digital">Código</a> · <a href="dbt/">Catálogo do dbt</a>
+    </footer>
   </main>
 
   <div id="dica" role="tooltip" hidden></div>
