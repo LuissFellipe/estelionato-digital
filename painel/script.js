@@ -202,25 +202,44 @@ function desenharEstados() {
   fichaEstado();
 }
 
+// Estados pequenos demais para ler no mapa: vão num quadro ao lado, no Atlântico.
+const PEQUENOS = ["RN", "PB", "PE", "AL", "SE", "ES", "RJ", "DF"];
+
 function desenharMapaEstados(vals) {
-  const cortes = limites(vals.map((v) => v.valor));
+  // Faixas calculadas com todos os anos juntos, para a mesma cor valer o mesmo número em 2021 e em 2025.
+  const todos = ANOS.flatMap((a) => valoresEstados(a).map((v) => v.valor));
+  const cortes = limites(todos);
   const faixas = cortes.map((c, i) => ({ gte: i === 0 ? 0 : cortes[i - 1], lt: c, color: FAIXAS[i] }));
   faixas.push({ gte: cortes[cortes.length - 1], color: FAIXAS[cortes.length] });
+  const faixaDe = (v) => faixas.findIndex((f) => v >= f.gte && (f.lt == null || v < f.lt));
+  const corDe = (v) => (v == null ? null : faixas[faixaDe(v)].color);
+  const escuro = (v) => v != null && faixaDe(v) >= 4;
   const rot = (x) => (est.medida === "taxa" ? nf.format(x) : x >= 1000 ? nf.format(x / 1000) + " mil" : nf.format(x));
+  const curto = (v) => (v == null ? "–" : est.medida === "taxa" ? nf.format(Math.round(v)) : v >= 1000 ? nf.format(Math.round(v / 1000)) + " mil" : nf.format(v));
   document.getElementById("legenda-bins").innerHTML =
     `<div class="bin sem"><i></i><span>sem dado</span></div>` +
-    faixas.map((f, i) => `<div class="bin"><i style="background:${f.color}"></i><span>${i === 0 ? "0" : rot(f.gte)}</span></div>`).join("");
+    faixas.map((f, i) => `<div class="bin"><i style="background:${f.color}"></i><span>${i === 0 ? "0" : rot(f.gte)}</span></div>`).join("") +
+    `<p class="legenda-nota">Mesma escala em todos os anos.</p>`;
   const mapa = grafico("g-mapa");
+  const pequeno = estreito();
   mapa.setOption({
     ...base(),
     tooltip: { ...base().tooltip, trigger: "item", formatter: (p) => tooltipEstado(p.name) },
     visualMap: { type: "piecewise", show: false, pieces: faixas, seriesIndex: 0 },
     series: [{
-      type: "map", map: "BR", roam: false, aspectScale: 0.95, layoutCenter: ["50%", "50%"], layoutSize: "100%", selectedMode: false,
+      type: "map", map: "BR", roam: false, aspectScale: 0.95, layoutCenter: [pequeno ? "50%" : "41%", "50%"], layoutSize: pequeno ? "100%" : "102%", selectedMode: false,
       itemStyle: { areaColor: cor("--vazio"), borderColor: cor("--folha"), borderWidth: 0.8 },
-      emphasis: { label: { show: true, color: cor("--tinta"), fontWeight: 700, fontFamily: "IBM Plex Mono, monospace" }, itemStyle: { borderColor: cor("--tinta"), borderWidth: 2, areaColor: null } },
-      label: { show: false },
-      data: vals.map((v) => ({ name: v.sigla, value: v.valor ?? undefined, ...(v.sigla === est.sel ? { itemStyle: { borderColor: cor("--tinta"), borderWidth: 2.5 } } : {}) })),
+      emphasis: { label: { show: true }, itemStyle: { borderColor: cor("--tinta"), borderWidth: 2, areaColor: null } },
+      label: {
+        show: true, fontFamily: "Lato, sans-serif", lineHeight: 13,
+        formatter: (p) => (PEQUENOS.includes(p.name) ? "" : `{s|${p.name}}\n{v|${curto(vals.find((v) => v.sigla === p.name)?.valor)}}`),
+        rich: { s: { fontSize: pequeno ? 9 : 11, fontWeight: 900 }, v: { fontSize: pequeno ? 8 : 10.5, fontFamily: "IBM Plex Mono, monospace" } },
+      },
+      data: vals.map((v) => ({
+        name: v.sigla, value: v.valor ?? undefined,
+        label: { color: escuro(v.valor) ? "#ffffff" : "#1d1d1d" },
+        ...(v.sigla === est.sel ? { itemStyle: { borderColor: cor("--tinta"), borderWidth: 2.5 } } : {}),
+      })),
     }],
   }, true);
   mapa.off("mouseover"); mapa.off("mouseout"); mapa.off("click");
@@ -228,6 +247,21 @@ function desenharMapaEstados(vals) {
   mapa.on("mouseover", (p) => { const l = linha(p.name); if (l) { l.classList.add("ativo"); l.scrollIntoView({ block: "nearest" }); } });
   mapa.on("mouseout", (p) => linha(p.name)?.classList.remove("ativo"));
   mapa.on("click", (p) => selecionarEstado(p.name));
+
+  const quadro = document.getElementById("quadro-pequenos");
+  quadro.innerHTML = PEQUENOS.map((s) => {
+    const v = vals.find((x) => x.sigla === s);
+    const c = corDe(v?.valor);
+    return `<button type="button" class="peq${c ? "" : " nd"}${s === est.sel ? " sel" : ""}" data-sigla="${s}" style="${c ? `background:${c};color:${escuro(v.valor) ? "#fff" : "#1d1d1d"}` : ""}"><b>${s}</b><span>${curto(v?.valor)}</span></button>`;
+  }).join("");
+  quadro.onclick = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b) selecionarEstado(b.dataset.sigla); };
+  quadro.onmouseover = (ev) => {
+    const b = ev.target.closest("[data-sigla]"); if (!b) return;
+    const r = b.getBoundingClientRect(), dica = document.getElementById("dica");
+    dica.innerHTML = tooltipEstado(b.dataset.sigla); dica.hidden = false;
+    dica.style.left = `${Math.min(r.left, innerWidth - 260)}px`; dica.style.top = `${r.bottom + 6}px`;
+  };
+  quadro.onmouseout = () => { document.getElementById("dica").hidden = true; };
 }
 
 function listaEstados() {

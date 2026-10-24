@@ -367,7 +367,7 @@ select {
   .grapher-topo h2 { font-size: 22px; }
   .linha-tempo { grid-template-columns: auto minmax(0, 1fr) auto; }
   .linha-tempo .ano-ponta:first-of-type { display: none; }
-  .legenda-bins .bin i { width: 38px; }
+  .legenda-bins .bin i { width: 32px; }
 }
 
 
@@ -426,3 +426,19 @@ html { scroll-behavior: smooth; scroll-padding-top: 56px; }
 .rodape { margin: 48px 0 24px; font-size: 13px; color: var(--tinta-3); }
 .faixa { display: none; }
 @media (max-width: 560px) { .nav-interna { gap: 16px; } }
+
+/* Mapa maior, rótulos nos estados e quadro dos estados pequenos */
+.mapa-alto { height: 640px; }
+.mapa-caixa { position: relative; }
+.quadro-pequenos { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: repeat(2, 64px); gap: 4px; }
+.peq { appearance: none; border: 1px solid var(--fio); border-radius: 3px; min-height: 44px; padding: 4px; display: grid; place-content: center; gap: 1px; cursor: pointer; background: var(--vazio); color: var(--tinta); font: 400 11px var(--mono); }
+.peq b { font: 900 12px var(--texto); }
+.peq.nd { background: repeating-linear-gradient(45deg, var(--vazio) 0 3px, var(--folha) 3px 6px); }
+.peq:hover, .peq.sel { outline: 2px solid var(--tinta); outline-offset: 1px; }
+.legenda-nota { flex-basis: 100%; margin: 4px 0 0; font: 400 11.5px var(--texto); color: var(--tinta-3); }
+.lista-estados { max-height: 760px; }
+@media (max-width: 640px) {
+  .mapa-alto { height: 340px; }
+  .legenda-bins .bin i { width: 32px; }
+  .quadro-pequenos { position: static; transform: none; grid-template-columns: repeat(4, 1fr); margin-top: 8px; }
+}
