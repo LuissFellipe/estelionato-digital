@@ -442,3 +442,14 @@ html { scroll-behavior: smooth; scroll-padding-top: 56px; }
   .legenda-bins .bin i { width: 32px; }
   .quadro-pequenos { position: static; transform: none; grid-template-columns: repeat(4, 1fr); margin-top: 8px; }
 }
+
+/* Títulos que afirmam, manchete do mapa, "como foi calculado" */
+.manchete { margin: 6px 0 0; font: 700 15px/1.4 var(--texto); color: var(--tinta); }
+.calc { margin-top: 10px; font-size: 13px; color: var(--tinta-2); }
+.calc summary { cursor: pointer; font-weight: 700; color: var(--tinta-3); min-height: 32px; display: flex; align-items: center; }
+.calc summary:hover { color: var(--acento); }
+.calc p { margin: 4px 0 0; max-width: 90ch; line-height: 1.5; }
+.legenda-bins .bin.larga i { width: 84px; }
+.legenda-bins .bin.larga span { font-family: var(--texto); }
+#grupo-escala[hidden] { display: none; }
+@media (max-width: 640px) { .legenda-bins .bin.larga i { width: 56px; } .legenda-bins .bin.larga span { font-size: 10px; } }

@@ -15,7 +15,7 @@
   <nav class="nav-topo" aria-label="Seções">
     <div class="miolo nav-interna">
       <strong class="marca">Golpe em Registro</strong>
-      <a href="#estados">Estados</a><a href="#comparativos">Total × eletrônico</a><a href="#falso-advogado">Falso advogado</a><a href="#materias">Matérias</a>
+      <a href="#panorama">Panorama</a><a href="#estados">Estados</a><a href="#comparativos">Total × eletrônico</a><a href="#falso-advogado">Falso advogado</a><a href="#materias">Matérias</a>
     </div>
   </nav>
 
@@ -25,6 +25,20 @@
       <p>Registros policiais por estado (Anuário Brasileiro de Segurança Pública, 2018–2025) e o golpe do falso advogado. Dados de <span id="gerado"></span>. <a href="dbt/">Catálogo do dbt</a> · <a href="https://github.com/LuissFellipe/estelionato-digital">Código</a></p>
     </header>
 
+    <section id="panorama">
+      <h2>Panorama</h2>
+      <figure class="cartao-grafico">
+        <figcaption><span class="titulo-grafico" id="tit-serie"></span><span class="sub-grafico">Registros de estelionato no Brasil (golpe digital e tradicional somados). Última versão publicada de cada ano.</span></figcaption>
+        <div class="grafico" id="g-serie" style="height:300px" role="img" aria-label="Série nacional de estelionato"></div>
+        <details class="calc"><summary>Como foi calculado</summary><p>Variação = (registros de <span id="calc-ult"></span> ÷ registros de <span id="calc-pri"></span> − 1) × 100. Média anual (taxa composta) = (último ÷ primeiro)<sup>1/anos</sup> − 1: é o crescimento constante por ano que levaria do primeiro ao último valor. Cada ano usa a versão mais recente publicada pelo Anuário, porque os números são revisados na edição seguinte.</p></details>
+      </figure>
+      <figure class="cartao-grafico">
+        <figcaption><span class="titulo-grafico" id="tit-funil"></span><span class="sub-grafico">Boletins de ocorrência, processos penais e presos por estelionato no Brasil. Fonte: Anuário 2026, Quadro 04 (p. 125).</span></figcaption>
+        <div class="tabela-dados" id="funil"></div>
+        <details class="calc"><summary>Como foi calculado</summary><p>Por 100 boletins = etapa ÷ boletins × 100. Processos e presos de um ano não são os casos registrados naquele ano: a razão compara volumes, não acompanha cada caso.</p></details>
+      </figure>
+    </section>
+
     <section id="estados">
       <h2>Estados</h2>
       <div id="fig-estados">
@@ -33,6 +47,7 @@
           <header class="grapher-topo">
             <h2 id="g-titulo"></h2>
             <p class="grapher-sub" id="g-sub"></p>
+            <p class="manchete" id="g-manchete"></p>
           </header>
           <div class="toolbar" id="controles-estados">
             <div class="abas-grapher" role="tablist" aria-label="Visualização" id="abas-vis">
@@ -46,6 +61,10 @@
             <div class="segmentos pequeno" role="group" aria-label="Medida" data-grupo="medida">
               <button type="button" class="seg" data-valor="taxa">Por 100 mil hab.</button>
               <button type="button" class="seg" data-valor="registros">Número absoluto</button>
+            </div>
+            <div class="segmentos pequeno" role="group" aria-label="Escala de cor" data-grupo="escala" id="grupo-escala">
+              <button type="button" class="seg" data-valor="faixas">Faixas</button>
+              <button type="button" class="seg" data-valor="mediana">Comparado à mediana</button>
             </div>
           </div>
           <p class="alerta" id="alerta-eletronico" hidden></p>
@@ -69,6 +88,7 @@
           <footer class="grapher-rodape">
             <p><b>Fonte:</b> Fórum Brasileiro de Segurança Pública, Anuário Brasileiro de Segurança Pública (planilhas das edições 2023 a 2026).</p>
             <p id="g-nota"><b>Nota:</b> registros policiais, não crimes.</p>
+            <details class="calc"><summary>Como foi calculado</summary><p><b>Taxa</b> = registros ÷ população × 100 mil (a do próprio Anuário, com população do IBGE). Serve para comparar estados de tamanhos diferentes. <b>Faixas</b>: os valores de todos os anos juntos divididos em seis grupos de tamanho igual (sextis), arredondados; assim a mesma cor vale o mesmo número em qualquer ano. <b>Comparado à mediana</b>: (taxa do estado ÷ mediana dos estados no ano − 1) × 100. Usa a mediana, e não a média, porque DF e SP puxam a média para cima; azul fica abaixo, vermelho acima, cinza dentro de ±15%. <b>Número absoluto</b>: círculo com área proporcional aos registros. Colorir o mapa com número absoluto destacaria só os estados populosos.</p></details>
           </footer>
         </div>
         <aside class="grapher-lateral">
@@ -88,22 +108,20 @@
       <figure class="cartao-grafico">
         <figcaption><span class="titulo-grafico" id="tit-empilhado"></span><span class="sub-grafico">Barras ordenadas pela parte eletrônica. SP, RJ e CE não separam o eletrônico e aparecem só com o total.</span></figcaption>
         <div class="grafico" id="g-empilhado" style="height:760px" role="img" aria-label="Estelionato total e eletrônico por estado"></div>
+        <details class="calc"><summary>Como foi calculado</summary><p>Parte eletrônica = estelionato eletrônico ÷ estelionato total do estado × 100, com as taxas por 100 mil do Anuário. SP, RJ e CE não separam o eletrônico: a barra mostra só o total, sem dividir, porque “não informado” não é zero.</p></details>
       </figure>
       <div class="dupla">
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico" id="tit-dispersao"></span><span class="sub-grafico">Cada bolha é um estado; o tamanho é o número de registros. Estados com taxa parecida registram proporções de eletrônico muito diferentes.</span></figcaption>
-          <div class="grafico" id="g-dispersao" style="height:440px" role="img" aria-label="Dispersão entre taxa de estelionato e parte eletrônica"></div>
+          <figcaption><span class="titulo-grafico" id="tit-cresc"></span><span class="sub-grafico" id="sub-cresc"></span></figcaption>
+          <div class="grafico" id="g-cresc" style="height:440px" role="img" aria-label="Crescimento anual do estelionato eletrônico"></div>
+        <details class="calc"><summary>Como foi calculado</summary><p>Variação = (soma do ano ÷ soma do ano anterior − 1) × 100. <b>Publicado</b>: soma de todos os estados que informaram em cada ano, então um estado que começa a informar (como PE em 2024) entra como se fosse crescimento. <b>Mesma base</b>: soma só dos estados presentes em todos os anos e sem quebra de série; mede o crescimento sem esse efeito.</p></details>
         </figure>
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Crescimento do eletrônico: publicado × mesma base de estados</span><span class="sub-grafico" id="sub-cresc"></span></figcaption>
-          <div class="grafico" id="g-cresc" style="height:440px" role="img" aria-label="Crescimento anual do estelionato eletrônico"></div>
+          <figcaption><span class="titulo-grafico" id="tit-dispersao"></span><span class="sub-grafico">Cada bolha é um estado; a área é o número de registros.</span></figcaption>
+          <div class="grafico" id="g-dispersao" style="height:440px" role="img" aria-label="Dispersão entre taxa de estelionato e parte eletrônica"></div>
+        <details class="calc"><summary>Como foi calculado</summary><p><b>r</b> é o coeficiente de correlação de Pearson entre a taxa de estelionato e a parte eletrônica nos estados que informam. Vai de −1 a 1: perto de 0, as duas medidas não andam juntas; acima de 0,6 (ou abaixo de −0,6), andam. Correlação não é causa. Valor atual: <span id="calc-r"></span>.</p></details>
         </figure>
       </div>
-      <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico">O estelionato no Brasil, 2018–2025</span><span class="sub-grafico">Registros de estelionato, golpe digital e tradicional somados. Última versão publicada de cada ano.</span></figcaption>
-        <div class="grafico" id="g-serie" style="height:320px" role="img" aria-label="Série nacional de estelionato"></div>
-      </figure>
-      <div class="tabela-dados" id="funil"></div>
 
     </section>
 
@@ -115,17 +133,19 @@
       <h4 class="sub-sub">Distribuição por estado</h4>
       <div class="dupla">
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Acórdãos sobre o golpe nos Tribunais de Justiça, 2023–2025</span><span class="sub-grafico">Os 10 tribunais com mais acórdãos. Os outros 17 não aparecem.</span></figcaption>
+          <figcaption><span class="titulo-grafico" id="tit-mapa-falso"></span><span class="sub-grafico">Acórdãos sobre o golpe, 2023–2025. Só os 10 tribunais com mais acórdãos; os outros 17 ficam em cinza.</span></figcaption>
           <div class="grafico mapa-medio" id="g-mapa-falso" role="img" aria-label="Mapa dos acórdãos por tribunal"></div>
+          <details class="calc"><summary>Como foi calculado</summary><p>Vieira (2026), Tabela 1: total de acórdãos de cada tribunal entre 2023 e 2025. Número absoluto, não taxa: mostra onde o golpe chegou à Justiça, e não o risco por habitante.</p></details>
         </figure>
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Acórdãos por tribunal e ano</span><span class="sub-grafico">Fonte: Vieira (2026, Tabela 1, p. 546).</span></figcaption>
+          <figcaption><span class="titulo-grafico" id="tit-tj"></span><span class="sub-grafico">Fonte: Vieira (2026, Tabela 1, p. 546).</span></figcaption>
           <div class="legenda-html" id="leg-tj"></div>
           <div class="grafico" id="g-tj" style="height:420px" role="img" aria-label="Acórdãos por tribunal e ano"></div>
+          <details class="calc"><summary>Como foi calculado</summary><p>Vieira (2026), Tabela 1. Onde a soma dos três anos difere do total impresso no artigo, o rótulo mostra o total impresso e a dica avisa a diferença.</p></details>
         </figure>
       </div>
       <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico">Golpe digital registrado × falso advogado nos tribunais</span><span class="sub-grafico">Cada ponto é um estado entre os 10 tribunais do levantamento. Eixo horizontal: estelionato por 100 mil hab. em 2025 (Anuário). Eixo vertical: acórdãos sobre o falso advogado por milhão de habitantes, 2023–2025 (Vieira).</span></figcaption>
+        <figcaption><span class="titulo-grafico" id="tit-disp-falso"></span><span class="sub-grafico">Cada ponto é um estado entre os 10 tribunais do levantamento. Eixo horizontal: estelionato por 100 mil hab. em 2025 (Anuário). Eixo vertical: acórdãos sobre o falso advogado por milhão de habitantes, 2023–2025 (Vieira).</span></figcaption>
         <div class="controles compacto">
           <div class="segmentos" role="group" aria-label="Tipo de estelionato no eixo horizontal" id="seg-disp-falso">
             <button type="button" class="seg" data-valor="total">Estelionato total</button>
@@ -133,22 +153,26 @@
           </div>
         </div>
         <div class="grafico" id="g-disp-falso" style="height:440px" role="img" aria-label="Dispersão entre estelionato e acórdãos do falso advogado"></div>
+          <details class="calc"><summary>Como foi calculado</summary><p>Eixo vertical = acórdãos 2023–2025 ÷ população do estado × 1 milhão (população implícita na taxa do Anuário de 2025). Por milhão, e não por 100 mil, porque os números são pequenos. <b>r</b> = correlação de Pearson entre os dois eixos; com só 10 pontos, é uma indicação fraca. Valor atual: <span id="calc-r-falso"></span>.</p></details>
       </figure>
       <figure class="cartao-grafico">
-        <figcaption><span class="titulo-grafico">Denúncias às seccionais da OAB</span><span class="sub-grafico">Cada seccional conta num período diferente. O período está escrito ao lado de cada barra.</span></figcaption>
+        <figcaption><span class="titulo-grafico">Denúncias às seccionais da OAB: cada uma conta num período diferente</span><span class="sub-grafico">O período está ao lado de cada barra. Não é ranking entre estados.</span></figcaption>
         <div class="grafico" id="g-oab" style="height:300px" role="img" aria-label="Denúncias às seccionais da OAB"></div>
+          <details class="calc"><summary>Como foi calculado</summary><p>Números como divulgados por cada seccional, cada um com seu período. Como as bases são diferentes, as barras mostram ordem de grandeza, não comparação entre estados.</p></details>
       </figure>
 
       <h4 class="sub-sub">Evolução no tempo</h4>
       <div class="dupla">
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Crescimento comparado, 2023 = 100</span><span class="sub-grafico">Três medidas de grandezas diferentes postas na mesma base: quanto cada uma cresceu desde 2023.</span></figcaption>
+          <figcaption><span class="titulo-grafico" id="tit-indice"></span><span class="sub-grafico">Índice 2023 = 100: quanto cada medida cresceu desde 2023.</span></figcaption>
           <div class="legenda-html" id="leg-indice"></div>
           <div class="grafico" id="g-indice" style="height:380px" role="img" aria-label="Índice de crescimento"></div>
+          <details class="calc"><summary>Como foi calculado</summary><p>Índice = valor do ano ÷ valor de 2023 × 100. Põe séries de tamanhos muito diferentes na mesma base para comparar o ritmo de crescimento; não compara os níveis. O eletrônico usa a mesma base de estados, para não contar como crescimento os estados que começaram a informar.</p></details>
         </figure>
         <figure class="cartao-grafico">
-          <figcaption><span class="titulo-grafico">Acórdãos por região e ano</span><span class="sub-grafico">Fonte: Vieira (2026, Tabela 2, p. 547). O Sudeste salta em 2025 por causa do TJSP.</span></figcaption>
+          <figcaption><span class="titulo-grafico" id="tit-regiao"></span><span class="sub-grafico">Acórdãos por região e ano. Fonte: Vieira (2026, Tabela 2, p. 547).</span></figcaption>
           <div class="grafico" id="g-regiao" style="height:380px" role="img" aria-label="Mapa de calor dos acórdãos por região e ano"></div>
+          <details class="calc"><summary>Como foi calculado</summary><p>Vieira (2026), Tabela 2. As somas por ano das regiões não batem com o total do artigo (veja a nota abaixo).</p></details>
         </figure>
       </div>
 

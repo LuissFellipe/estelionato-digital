@@ -99,6 +99,17 @@ const eixoCategoria = (dados, extra = {}) => ({
 // Rampa padrão de mapa de calor (amarelo → vermelho), igual nos dois temas: valor alto é sempre o mais escuro e vermelho.
 const rampa = () => ["#ffffcc", "#fed976", "#fd8d3c", "#e31a1c", "#800026"];
 const estreito = () => window.innerWidth < 640;
+const mediana = (xs) => { const v = xs.filter((x) => x != null).sort((a, b) => a - b); const m = Math.floor(v.length / 2); return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2; };
+// Correlação de Pearson e a frase que a descreve: o título diz a conclusão, o número fica no "como foi calculado".
+function pearson(pts) {
+  const n = pts.length, mx = pts.reduce((s, p) => s + p[0], 0) / n, my = pts.reduce((s, p) => s + p[1], 0) / n;
+  let sxy = 0, sxx = 0, syy = 0;
+  pts.forEach(([x, y]) => { sxy += (x - mx) * (y - my); sxx += (x - mx) ** 2; syy += (y - my) ** 2; });
+  return sxy / Math.sqrt(sxx * syy);
+}
+const n2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const forca = (r) => (Math.abs(r) < 0.3 ? "quase não andam juntos" : Math.abs(r) < 0.6 ? (r > 0 ? "andam juntos só em parte" : "andam em sentido contrário só em parte") : r > 0 ? "andam juntos" : "andam em sentido contrário");
+const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
 
 let mapaRegistrado = false;
 function registrarMapa() {
@@ -110,7 +121,7 @@ function registrarMapa() {
 }
 
 // ================================================================ ESTADOS
-const est = { ano: ULTIMO, crime: "total", medida: "taxa", sel: null, vis: "mapa", busca: "" };
+const est = { ano: ULTIMO, crime: "total", medida: "taxa", escala: "faixas", sel: null, vis: "mapa", busca: "" };
 // Seis faixas do amarelo ao vermelho, como nos mapas do Our World in Data.
 const FAIXAS = ["#ffffb2", "#fed976", "#feb24c", "#fd8d3c", "#f03b20", "#bd0026"];
 
@@ -155,6 +166,8 @@ function marcarControlesEstados() {
   document.querySelectorAll("#controles-estados .segmentos .seg").forEach((b) => b.setAttribute("aria-pressed", String(est[b.parentElement.dataset.grupo] === b.dataset.valor)));
   document.querySelectorAll("#abas-vis [data-vis]").forEach((b) => b.setAttribute("aria-selected", String(est.vis === b.dataset.vis)));
   document.getElementById("slider-ano").value = est.ano;
+  // Com número absoluto o mapa usa círculos; a escala de cor só vale para a taxa.
+  document.getElementById("grupo-escala").hidden = est.medida !== "taxa" || est.vis !== "mapa";
 }
 
 function tooltipEstado(sigla) {
@@ -166,6 +179,7 @@ function tooltipEstado(sigla) {
   if (v.valor == null) return h + "Não informa o eletrônico ao Anuário.";
   h += `${fmt(v.registros)} registros · ${n1.format(v.taxa)} por 100 mil<br>`;
   h += `<span style="color:${cor("--tinta-3")}">${pos}º de ${ordenados.length} em ${est.medida === "taxa" ? "taxa" : "número absoluto"}</span>`;
+  if (est.medida === "taxa") { const m = mediana(ordenados.map((x) => x.valor)), d = 100 * (v.valor / m - 1); h += `<br>${pct(Math.abs(d))} ${d >= 0 ? "acima" : "abaixo"} da mediana dos estados (${n1.format(m)})`; }
   if (est.crime === "eletronico" && quebra(sigla)) h += `<br><span style="color:${cor("--carimbo")}">Quebra de série em ${quebra(sigla).ano}</span>`;
   return h;
 }
@@ -196,6 +210,13 @@ function desenharEstados() {
   document.getElementById("vis-calor").hidden = est.vis !== "calor";
   document.getElementById("linha-tempo").hidden = est.vis !== "mapa";
 
+  const comV = vals.filter((v) => v.valor != null).sort((a, b) => b.valor - a.valor);
+  if (comV.length) {
+    const m = mediana(comV.map((v) => v.valor)), maior = comV[0], menor = comV[comV.length - 1];
+    document.getElementById("g-manchete").textContent = est.medida === "taxa"
+      ? `${maior.uf} tem a maior taxa (${n1.format(maior.valor)}), ${n1.format(maior.valor / menor.valor)} vezes a ${({ na: "da", no: "do" })[PREP[menor.uf]] || "de"} ${menor.uf} (${n1.format(menor.valor)}). Mediana dos estados: ${n1.format(m)}.`
+      : `${maior.uf} concentra ${pct(100 * maior.valor / comV.reduce((s, v) => s + v.valor, 0))} dos registros dos estados que informam. Com número absoluto, os estados populosos sempre lideram: para comparar risco, use a taxa.`;
+  }
   if (est.vis === "mapa") desenharMapaEstados(vals);
   else desenharCalor();
   listaEstados();
@@ -205,42 +226,79 @@ function desenharEstados() {
 // Estados pequenos demais para ler no mapa: vão num quadro ao lado, no Atlântico.
 const PEQUENOS = ["RN", "PB", "PE", "AL", "SE", "ES", "RJ", "DF"];
 
+// Divergente para a comparação com a mediana: azul abaixo, cinza perto, vermelho acima.
+const DIVERGE = ["#2166ac", "#67a9cf", "#d6d6d6", "#ef8a62", "#b2182b"];
+const centros = {};
+function centro(sigla) {
+  if (centros[sigla]) return centros[sigla];
+  const f = window.ESTADOS.features.find((x) => x.properties.uf === sigla);
+  const polis = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+  const anel = polis.map((p) => p[0]).sort((x, y) => y.length - x.length)[0];
+  const xs = anel.map((p) => p[0]), ys = anel.map((p) => p[1]);
+  return (centros[sigla] = [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]);
+}
+
 function desenharMapaEstados(vals) {
-  // Faixas calculadas com todos os anos juntos, para a mesma cor valer o mesmo número em 2021 e em 2025.
-  const todos = ANOS.flatMap((a) => valoresEstados(a).map((v) => v.valor));
-  const cortes = limites(todos);
-  const faixas = cortes.map((c, i) => ({ gte: i === 0 ? 0 : cortes[i - 1], lt: c, color: FAIXAS[i] }));
-  faixas.push({ gte: cortes[cortes.length - 1], color: FAIXAS[cortes.length] });
-  const faixaDe = (v) => faixas.findIndex((f) => v >= f.gte && (f.lt == null || v < f.lt));
-  const corDe = (v) => (v == null ? null : faixas[faixaDe(v)].color);
-  const escuro = (v) => v != null && faixaDe(v) >= 4;
-  const rot = (x) => (est.medida === "taxa" ? nf.format(x) : x >= 1000 ? nf.format(x / 1000) + " mil" : nf.format(x));
+  const modo = est.medida === "registros" ? "circulos" : est.escala;
   const curto = (v) => (v == null ? "–" : est.medida === "taxa" ? nf.format(Math.round(v)) : v >= 1000 ? nf.format(Math.round(v / 1000)) + " mil" : nf.format(v));
-  document.getElementById("legenda-bins").innerHTML =
-    `<div class="bin sem"><i></i><span>sem dado</span></div>` +
-    faixas.map((f, i) => `<div class="bin"><i style="background:${f.color}"></i><span>${i === 0 ? "0" : rot(f.gte)}</span></div>`).join("") +
-    `<p class="legenda-nota">Mesma escala em todos os anos.</p>`;
+  const med = mediana(vals.map((v) => v.valor));
+  let faixas = null, valorCor = (v) => v, texto = curto, legenda;
+  if (modo === "faixas") {
+    // Faixas calculadas com todos os anos juntos, para a mesma cor valer o mesmo número em 2021 e em 2025.
+    const cortes = limites(ANOS.flatMap((a) => valoresEstados(a).map((v) => v.valor)));
+    faixas = cortes.map((c, i) => ({ gte: i === 0 ? 0 : cortes[i - 1], lt: c, color: FAIXAS[i] }));
+    faixas.push({ gte: cortes[cortes.length - 1], color: FAIXAS[cortes.length] });
+    legenda = faixas.map((f, i) => `<div class="bin"><i style="background:${f.color}"></i><span>${i === 0 ? "0" : nf.format(f.gte)}</span></div>`).join("") + `<p class="legenda-nota">Mesma escala em todos os anos.</p>`;
+  } else if (modo === "mediana") {
+    valorCor = (v) => (v == null ? null : 100 * (v / med - 1));
+    texto = (v) => { if (v == null) return "–"; const d = Math.round(100 * (v / med - 1)); return (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d) + "%"; };
+    faixas = [{ lt: -40, color: DIVERGE[0] }, { gte: -40, lt: -15, color: DIVERGE[1] }, { gte: -15, lt: 15, color: DIVERGE[2] }, { gte: 15, lt: 40, color: DIVERGE[3] }, { gte: 40, color: DIVERGE[4] }];
+    legenda = ["menos de −40%", "−40 a −15%", "±15%", "+15 a +40%", "mais de +40%"].map((t, i) => `<div class="bin larga"><i style="background:${DIVERGE[i]}"></i><span>${t}</span></div>`).join("") + `<p class="legenda-nota">Diferença para a mediana dos estados em ${est.ano} (${n1.format(med)} por 100 mil).</p>`;
+  } else {
+    legenda = `<p class="legenda-nota">Área do círculo proporcional ao número de registros.</p>`;
+  }
+  const faixaDe = (x) => faixas.findIndex((f) => (f.gte == null || x >= f.gte) && (f.lt == null || x < f.lt));
+  const corDe = (v) => { const x = valorCor(v); return x == null || !faixas ? null : faixas[faixaDe(x)].color; };
+  const escuro = (v) => { const x = valorCor(v); if (x == null || !faixas) return false; const i = faixaDe(x); return modo === "faixas" ? i >= 4 : i === 0 || i === 4; };
+  document.getElementById("legenda-bins").innerHTML = `<div class="bin sem"><i></i><span>sem dado</span></div>` + legenda;
+
   const mapa = grafico("g-mapa");
   const pequeno = estreito();
+  const maxReg = Math.max(...vals.map((v) => v.valor ?? 0));
+  const tintaClara = cor("--tinta");
   mapa.setOption({
     ...base(),
     tooltip: { ...base().tooltip, trigger: "item", formatter: (p) => tooltipEstado(p.name) },
-    visualMap: { type: "piecewise", show: false, pieces: faixas, seriesIndex: 0 },
-    series: [{
-      type: "map", map: "BR", roam: false, aspectScale: 0.95, layoutCenter: [pequeno ? "50%" : "41%", "50%"], layoutSize: pequeno ? "100%" : "102%", selectedMode: false,
+    visualMap: faixas ? { type: "piecewise", show: false, pieces: faixas, seriesIndex: 0 } : undefined,
+    geo: {
+      map: "BR", roam: false, aspectScale: 0.95, layoutCenter: [pequeno ? "50%" : "41%", "50%"], layoutSize: pequeno ? "100%" : "102%", selectedMode: false,
       itemStyle: { areaColor: cor("--vazio"), borderColor: cor("--folha"), borderWidth: 0.8 },
-      emphasis: { label: { show: true }, itemStyle: { borderColor: cor("--tinta"), borderWidth: 2, areaColor: null } },
+      emphasis: { label: { show: true }, itemStyle: { borderColor: cor("--tinta"), borderWidth: 2, areaColor: modo === "circulos" ? cor("--vazio") : null } },
       label: {
-        show: true, fontFamily: "Lato, sans-serif", lineHeight: 13,
-        formatter: (p) => (PEQUENOS.includes(p.name) ? "" : `{s|${p.name}}\n{v|${curto(vals.find((v) => v.sigla === p.name)?.valor)}}`),
+        show: modo !== "circulos", fontFamily: "Lato, sans-serif", lineHeight: 13,
+        formatter: (p) => (PEQUENOS.includes(p.name) ? "" : `{s|${p.name}}\n{v|${texto(vals.find((v) => v.sigla === p.name)?.valor)}}`),
         rich: { s: { fontSize: pequeno ? 9 : 11, fontWeight: 900 }, v: { fontSize: pequeno ? 8 : 10.5, fontFamily: "IBM Plex Mono, monospace" } },
       },
-      data: vals.map((v) => ({
-        name: v.sigla, value: v.valor ?? undefined,
-        label: { color: escuro(v.valor) ? "#ffffff" : "#1d1d1d" },
+      regions: vals.map((v) => ({
+        name: v.sigla,
+        label: { color: escuro(v.valor) ? "#ffffff" : corDe(v.valor) ? "#1d1d1d" : tintaClara },
         ...(v.sigla === est.sel ? { itemStyle: { borderColor: cor("--tinta"), borderWidth: 2.5 } } : {}),
       })),
-    }],
+    },
+    series: [
+      { type: "map", geoIndex: 0, data: vals.map((v) => ({ name: v.sigla, value: valorCor(v.valor) ?? undefined })) },
+      ...(modo === "circulos" ? [{
+        type: "scatter", coordinateSystem: "geo", z: 3,
+        data: vals.filter((v) => v.valor != null).map((v) => ({ name: v.sigla, value: [...centro(v.sigla), v.valor] })),
+        symbolSize: (d) => 4 + (pequeno ? 44 : 78) * Math.sqrt(d[2] / maxReg),
+        itemStyle: { color: cor("--serie-1"), opacity: 0.6, borderColor: cor("--folha"), borderWidth: 1 },
+        label: { show: true, position: "bottom", distance: 2, color: cor("--tinta"), fontFamily: "Lato, sans-serif", lineHeight: 12,
+          formatter: (p) => (PEQUENOS.includes(p.name) ? "" : `{s|${p.name}} {v|${curto(p.value[2])}}`),
+          rich: { s: { fontSize: pequeno ? 9 : 11, fontWeight: 900 }, v: { fontSize: pequeno ? 8 : 10.5, fontFamily: "IBM Plex Mono, monospace" } } },
+        labelLayout: { hideOverlap: true },
+        emphasis: { itemStyle: { opacity: 0.9 } },
+      }] : []),
+    ],
   }, true);
   mapa.off("mouseover"); mapa.off("mouseout"); mapa.off("click");
   const linha = (sigla) => document.querySelector(`.estado-linha[data-sigla="${sigla}"]`);
@@ -249,10 +307,11 @@ function desenharMapaEstados(vals) {
   mapa.on("click", (p) => selecionarEstado(p.name));
 
   const quadro = document.getElementById("quadro-pequenos");
-  quadro.innerHTML = PEQUENOS.map((s) => {
-    const v = vals.find((x) => x.sigla === s);
+  quadro.innerHTML = PEQUENOS.map((sg) => {
+    const v = vals.find((x) => x.sigla === sg);
     const c = corDe(v?.valor);
-    return `<button type="button" class="peq${c ? "" : " nd"}${s === est.sel ? " sel" : ""}" data-sigla="${s}" style="${c ? `background:${c};color:${escuro(v.valor) ? "#fff" : "#1d1d1d"}` : ""}"><b>${s}</b><span>${curto(v?.valor)}</span></button>`;
+    const nd = v?.valor == null;
+    return `<button type="button" class="peq${nd ? " nd" : ""}${sg === est.sel ? " sel" : ""}" data-sigla="${sg}" style="${c ? `background:${c};color:${escuro(v.valor) ? "#fff" : "#1d1d1d"}` : ""}"><b>${sg}</b><span>${texto(v?.valor)}</span></button>`;
   }).join("");
   quadro.onclick = (ev) => { const b = ev.target.closest("[data-sigla]"); if (b) selecionarEstado(b.dataset.sigla); };
   quadro.onmouseover = (ev) => {
@@ -398,7 +457,7 @@ function desenharComparativos() {
 
   // Empilhado total × eletrônico (taxa)
   const ord = [...part].sort((a, b) => (b.pctE ?? -1) - (a.pctE ?? -1));
-  document.getElementById("tit-empilhado").textContent = `Estelionato por 100 mil hab., ${ULTIMO}: parte eletrônica e o restante`;
+  document.getElementById("tit-empilhado").textContent = `Nos estados que informam, o eletrônico vai de ${pct(menorE.pctE)} (${menorE.uf}) a ${pct(maiorE.pctE)} (${maiorE.uf}) do estelionato, ${ULTIMO}`;
   const emp = grafico("g-empilhado");
   emp.setOption({
     ...base(),
@@ -422,7 +481,9 @@ function desenharComparativos() {
   }, true);
 
   // Dispersão
-  document.getElementById("tit-dispersao").textContent = `Taxa de estelionato × parte eletrônica, ${ULTIMO}`;
+  const rD = pearson(comE.map((p) => [p.taxa, p.pctE]));
+  document.getElementById("tit-dispersao").textContent = `Taxa de estelionato e parte eletrônica ${forca(rD)}, ${ULTIMO}`;
+  setTxt("calc-r", `r = ${n2.format(rD)}, ${comE.length} estados`);
   const maxReg = Math.max(...comE.map((p) => p.total));
   const disp = grafico("g-dispersao");
   disp.setOption({
@@ -444,6 +505,8 @@ function desenharComparativos() {
 
   // Crescimento publicado × base fixa
   const bf = D.base_fixa.filter((b) => b.cresc_publicado_pct != null);
+  const bfU = bf[bf.length - 1];
+  document.getElementById("tit-cresc").textContent = `Na mesma base de estados, o eletrônico cresceu ${pct(bfU.cresc_base_fixa_pct, true)} em ${bfU.ano}, não ${pct(bfU.cresc_publicado_pct, true)}`;
   document.getElementById("sub-cresc").textContent = `Base fixa: os ${bf[0].ufs_na_base} estados que informam desde ${D.base_fixa[0].ano}, sem quebra de série (${bf[0].ufs.join(", ")}).`;
   const cr = grafico("g-cresc");
   cr.setOption({
@@ -454,7 +517,7 @@ function desenharComparativos() {
     xAxis: eixoCategoria(bf.map((b) => `${b.ano - 1}→${b.ano}`)),
     yAxis: eixoValor({ axisLabel: { formatter: (v) => v + "%", color: cor("--tinta-3"), fontSize: 11 } }),
     series: [
-      { name: "Total publicado", type: "bar", barGap: "8%", itemStyle: { color: cor("--serie-2"), borderRadius: [4, 4, 0, 0] }, data: bf.map((b) => b.cresc_publicado_pct),
+      { name: "Total publicado", type: "bar", barGap: "8%", itemStyle: { color: cor("--fio-forte"), borderRadius: [4, 4, 0, 0] }, data: bf.map((b) => b.cresc_publicado_pct),
         label: { show: true, position: "top", fontSize: 11, fontFamily: "IBM Plex Mono, monospace", color: cor("--tinta"), formatter: (p) => pct(p.value, true) } },
       { name: "Mesma base de estados", type: "bar", itemStyle: { color: cor("--serie-1"), borderRadius: [4, 4, 0, 0] }, data: bf.map((b) => b.cresc_base_fixa_pct),
         label: { show: true, position: "top", fontSize: 11, fontFamily: "IBM Plex Mono, monospace", color: cor("--tinta"), formatter: (p) => pct(p.value, true) } },
@@ -463,6 +526,10 @@ function desenharComparativos() {
 
   // Série nacional
   const sn = D.serie_nacional;
+  const s0 = sn[0], sU = sn[sn.length - 1], nAnos = sU.ano - s0.ano;
+  const cagr = 100 * (Math.pow(sU.registros / s0.registros, 1 / nAnos) - 1);
+  document.getElementById("tit-serie").textContent = `O estelionato registrado cresceu ${pct(100 * (sU.registros / s0.registros - 1), true)} de ${s0.ano} a ${sU.ano}, cerca de ${pct(cagr)} ao ano`;
+  setTxt("calc-pri", s0.ano); setTxt("calc-ult", sU.ano);
   const se = grafico("g-serie");
   se.setOption({
     ...base(),
@@ -470,20 +537,20 @@ function desenharComparativos() {
     tooltip: { ...base().tooltip, trigger: "axis", axisPointer: { type: "shadow" }, formatter: (ps) => { const s = sn[ps[0].dataIndex]; return `<b>${s.ano}</b><br>${fmt(s.registros)} registros` + (s.primeira_publicacao !== s.registros ? `<br><span style="color:${cor("--tinta-3")}">Primeira publicação: ${fmt(s.primeira_publicacao)} (ed. ${s.primeira_edicao})</span>` : ""); } },
     xAxis: eixoCategoria(sn.map((s) => String(s.ano))),
     yAxis: eixoValor({ axisLabel: { formatter: (v) => (v / 1e6).toFixed(1).replace(".", ",") + " mi", color: cor("--tinta-3"), fontSize: 11 } }),
-    series: [{ type: "bar", barWidth: "56%", itemStyle: { color: cor("--serie-1"), borderRadius: [4, 4, 0, 0] }, data: sn.map((s) => s.registros),
+    series: [{ type: "bar", barWidth: "56%", itemStyle: { borderRadius: [4, 4, 0, 0] }, data: sn.map((s, i) => ({ value: s.registros, itemStyle: { color: i === 0 || i === sn.length - 1 ? cor("--serie-1") : cor("--seq-1") } })),
       label: { show: true, position: "top", fontSize: 11, fontFamily: "IBM Plex Mono, monospace", color: cor("--tinta"), formatter: (p) => (p.dataIndex === 0 || p.dataIndex === sn.length - 1 ? (p.value / 1e6).toFixed(2).replace(".", ",") + " mi" : "") } }],
   }, true);
 
   // Funil
   const f = D.funil[D.funil.length - 1];
+  setTxt("tit-funil", `De cada 100 boletins de estelionato em ${f.ano}, ${n1.format(f.processos_por_100_boletins)} viram processo e ${n1.format(f.presos_por_100_boletins)} terminam em prisão`);
   document.getElementById("funil").innerHTML = `
-    <div class="legenda-tabela">Boletins de ocorrência, processos penais e presos por estelionato no Brasil, ${f.ano}. Fonte: Anuário 2026, Quadro 04 (p. 125).</div>
     <table><thead><tr><th>Etapa</th><th class="num">${D.funil[0].ano}</th><th class="num">${f.ano}</th><th class="num">Por 100 boletins (${f.ano})</th></tr></thead><tbody>
       <tr><td>Boletins de ocorrência</td><td class="num">${fmt(D.funil[0].boletins)}</td><td class="num">${fmt(f.boletins)}</td><td class="num">100,0</td></tr>
       <tr><td>Processos penais</td><td class="num">${fmt(D.funil[0].processos)}</td><td class="num">${fmt(f.processos)}</td><td class="num">${n1.format(f.processos_por_100_boletins)}</td></tr>
       <tr><td>Presos</td><td class="num">${fmt(D.funil[0].presos)}</td><td class="num">${fmt(f.presos)}</td><td class="num">${n1.format(f.presos_por_100_boletins)}</td></tr>
     </tbody></table>
-    <p class="nota-tabela">Nota: processos e presos de um ano não são os casos registrados naquele ano; a razão compara volumes e não acompanha casos.</p>`;
+    `;
 }
 
 // ========================================================== FALSO ADVOGADO
@@ -519,6 +586,12 @@ function desenharFalso() {
     }],
   }, true);
 
+  const somaTJ = V.tribunais.reduce((s, t) => s + t.total, 0);
+  const top3 = [...V.tribunais].sort((a, b) => b.total - a.total).slice(0, 3);
+  setTxt("tit-mapa-falso", `${top3.map((t) => t.tj).join(", ")} somam ${pct(100 * top3.reduce((s, t) => s + t.total, 0) / somaTJ)} dos acórdãos dos 10 tribunais`);
+  const tjsp = V.tribunais.find((t) => t.sigla === "SP");
+  setTxt("tit-tj", `O TJSP tem ${tjsp.total} acórdãos, ${pct(100 * tjsp.a2025 / tjsp.total)} deles só em 2025`);
+
   // Barras empilhadas por tribunal
   const anosV = ["a2023", "a2024", "a2025"];
   const coresAno = [cor("--seq-2"), cor("--seq-3"), cor("--seq-5")];
@@ -545,6 +618,9 @@ function desenharFalso() {
     return { ...t, x: r && r.situacao === "informado" ? r.taxa : null, y: t.total / POP[t.sigla] * 1e6 };
   });
   const validos = pts.filter((p) => p.x != null), fora = pts.filter((p) => p.x == null);
+  const rF = pearson(validos.map((p) => [p.x, p.y]));
+  setTxt("tit-disp-falso", `Estelionato${disp.crime === "eletronico" ? " eletrônico" : ""} registrado e acórdãos do falso advogado ${forca(rF)} nos estados`);
+  setTxt("calc-r-falso", `r = ${n2.format(rF)}, ${validos.length} estados`);
   const dg = grafico("g-disp-falso");
   dg.setOption({
     ...base(),
@@ -582,12 +658,15 @@ function desenharFalso() {
   const elet = anosI.map((a) => D.base_fixa.find((b) => b.ano === a).base_fixa);
   const ac = V.anuais.map((a) => a.acordaos);
   const idx = (arr) => arr.map((v) => 100 * v / arr[0]);
+  // O foco é o falso advogado: ele leva a cor; as duas séries do Anuário ficam em cinza, uma tracejada.
   const seriesI = [
-    ["Estelionato no Brasil (Anuário)", totBR, cor("--serie-1")],
-    ["Estelionato eletrônico, mesma base de estados (Anuário)", elet, cor("--serie-3")],
-    ["Acórdãos do falso advogado (Vieira)", ac, cor("--serie-2")],
+    ["Estelionato no Brasil (Anuário)", totBR, cor("--tinta-3"), "solid"],
+    ["Estelionato eletrônico, mesma base de estados (Anuário)", elet, cor("--fio-forte"), "dashed"],
+    ["Acórdãos do falso advogado (Vieira)", ac, cor("--serie-2"), "solid"],
   ];
-  document.getElementById("leg-indice").innerHTML = seriesI.map(([n, , c]) => `<span><i class="linha" style="background:${c}"></i>${n}</span>`).join("");
+  const cresc = (arr) => pct(100 * (arr[arr.length - 1] / arr[0] - 1), true);
+  setTxt("tit-indice", `De 2023 a 2025, os acórdãos do falso advogado cresceram ${cresc(ac)}; o estelionato registrado, ${cresc(totBR)}`);
+  document.getElementById("leg-indice").innerHTML = seriesI.map(([n, , c, t]) => `<span><i class="linha" style="${t === "dashed" ? `background:repeating-linear-gradient(90deg,${c} 0 5px,transparent 5px 8px)` : `background:${c}`}"></i>${n}</span>`).join("");
   const ig = grafico("g-indice");
   ig.setOption({
     ...base(),
@@ -595,14 +674,16 @@ function desenharFalso() {
     tooltip: { ...base().tooltip, trigger: "axis", formatter: (ps) => `<b>${anosI[ps[0].dataIndex]}</b><br>` + ps.map((p) => `${p.marker}${p.seriesName}: ${n1.format(p.value)} (${fmt(seriesI[p.seriesIndex][1][p.dataIndex])})`).join("<br>") },
     xAxis: eixoCategoria(anosI.map(String), { boundaryGap: false }),
     yAxis: eixoValor({ min: 80, axisLabel: { formatter: (v) => nf.format(v), color: cor("--tinta-3"), fontSize: 11 } }),
-    series: seriesI.map(([n, arr, c]) => ({
-      name: n, type: "line", data: idx(arr), symbol: "circle", symbolSize: 8, lineStyle: { width: 2, color: c }, itemStyle: { color: c, borderColor: cor("--folha"), borderWidth: 2 },
+    series: seriesI.map(([n, arr, c, t], i) => ({
+      name: n, type: "line", data: idx(arr), symbol: "circle", symbolSize: 8, lineStyle: { width: i === 2 ? 3 : 2, color: c, type: t }, itemStyle: { color: c, borderColor: cor("--folha"), borderWidth: 2 },
       endLabel: { show: true, formatter: (p) => n1.format(p.value), color: cor("--tinta"), fontFamily: "IBM Plex Mono, monospace", fontSize: 11 },
     })),
   }, true);
 
   // Região × ano
   const regs = V.regioes;
+  const subida = [...regs].sort((a, b) => (b.a2025 - b.a2024) - (a.a2025 - a.a2024))[0];
+  setTxt("tit-regiao", `O ${subida.regiao} salta de ${subida.a2024} para ${subida.a2025} acórdãos em 2025${subida.regiao === "Sudeste" ? ", puxado pelo TJSP" : ""}`);
   const dadosR = [];
   regs.forEach((r, y) => ["a2023", "a2024", "a2025"].forEach((k, x) => dadosR.push({ value: [x, y, r[k]], label: { color: r[k] > 100 ? "#ffffff" : "#14202b" } })));
   const rg = grafico("g-regiao");
